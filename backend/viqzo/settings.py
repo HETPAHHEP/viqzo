@@ -1,13 +1,17 @@
-from pathlib import Path
+import os
 
+from pathlib import Path
+from dotenv import load_dotenv
+
+load_dotenv()
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-SECRET_KEY = 'django-insecure-jk&f!%c2ild$@i8412^pegud+g2+%@f1o849ovnc2y28kn50o)'
+SECRET_KEY = os.getenv('DJANGO_SECRET_KEY')
 
 
-DEBUG = True
+DEBUG = os.getenv('DEBUG', False)
 
 ALLOWED_HOSTS = []
 
@@ -19,6 +23,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
+    'api',
+    'urls',
 ]
 
 MIDDLEWARE = [
