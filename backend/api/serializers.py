@@ -1,6 +1,8 @@
 from rest_framework.serializers import ModelSerializer
+
 from links.models import ShortLink
-from services.url_short_logic import LinkHash
+
+from .services.url_short_logic import LinkHash
 
 
 class LinkReadSerializer(ModelSerializer):

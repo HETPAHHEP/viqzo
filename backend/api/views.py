@@ -1,10 +1,10 @@
-from rest_framework.viewsets import GenericViewSet
 from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin
+from rest_framework.viewsets import GenericViewSet
+
+from links.models import ShortLink
 
 from .serializers import LinkReadSerializer, LinkWriteSerializer
 from .services.url_short_logic import LinkHash
-
-from links.models import ShortLink
 
 
 class LinkViewSet(CreateModelMixin, RetrieveModelMixin, GenericViewSet):

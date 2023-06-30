@@ -1,8 +1,7 @@
+from django.urls import include, path
 from rest_framework import routers
-from django.urls import path, include
 
 from .views import LinkViewSet
-
 
 VERSION = 1
 

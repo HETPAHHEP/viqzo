@@ -1,6 +1,6 @@
 import uuid
 
-from services_exceptions import LinkIDZeroError
+from .services_exceptions import LinkIDZeroError
 
 
 class LinkHash:
