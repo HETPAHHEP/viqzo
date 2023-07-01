@@ -1,13 +1,10 @@
-from django.urls import include, path
-from rest_framework import routers
+from django.urls import path
 
-from .views import LinkViewSet
+from .views import ShortLinkView
 
-VERSION = 1
+VERSION = '1'
 
-router = routers.DefaultRouter()
-router.register(r'links', LinkViewSet, basename='links')
 
 urlpatterns = [
-    path('', include(router.urls))
+    path('links/', ShortLinkView.as_view())
 ]

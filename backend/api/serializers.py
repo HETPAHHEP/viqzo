@@ -1,11 +1,12 @@
-from rest_framework.serializers import ModelSerializer
+from rest_framework import serializers
 
+from core.enums import Limits
 from links.models import ShortLink
 
 from .services.url_short_logic import LinkHash
 
 
-class LinkReadSerializer(ModelSerializer):
+class LinkReadSerializer(serializers.ModelSerializer):
     """Сериализатор для чтения ссылок"""
 
     class Meta:
@@ -13,18 +14,26 @@ class LinkReadSerializer(ModelSerializer):
         fields = ['original_link', 'short_url', 'created_at']
 
 
-class LinkWriteSerializer(ModelSerializer):
+class LinkWriteSerializer(serializers.Serializer):
     """Сериализатор для записи ссылок"""
+    original_link = serializers.URLField(
+        max_length=Limits.MAX_LEN_ORIGINAL_LINK
+    )
 
-    class Meta:
-        model = ShortLink
-        fields = ['original_link']
+    def create(self, validated_data) -> tuple[str, bool]:
+        """Создание сокращенной ссылки для оригинальной"""
+        original_link = validated_data.get('original_link')
+        url, created = ShortLink.objects.get_or_create(
+            original_link=original_link
+        )
 
-    def create(self, validated_data):
-        short_code = LinkHash().get_short_code()
+        if created:
+            while not url.short_url:
+                # проверяем, не занят ли короткий код и присваиваем его ссылке
+                short_code = LinkHash().get_short_code()
 
+                if not ShortLink.objects.filter(short_url=short_code).exists():
+                    url.short_url = short_code
+                    url.save()
 
-
-    def to_representation(self, instance):
-        created_link = LinkReadSerializer(instance=instance).data
-        return created_link
+        return url, created

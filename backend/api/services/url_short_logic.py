@@ -1,5 +1,7 @@
 import uuid
 
+from core.enums import Limits
+
 from .services_exceptions import LinkIDZeroError
 
 
@@ -11,10 +13,12 @@ class LinkHash:
     """
 
     def __init__(self):
-        # перемешанный алфавит с 0-9 и в английскими буквами нижнего и верхнего регистра
-        self.alphabet = '0GTWYahl4C1Dq2evKiNPJdwfLxAsH9t8E5Z3RISyUuzQVk7rjFn6mpgbBXOcoM'
+        # перемешанный алфавит с 0-9 и английскими буквами
+        # нижнего и верхнего регистра.
+        self.alphabet = \
+            '0GTWYahl4C1Dq2evKiNPJdwfLxAsH9t8E5Z3RISyUuzQVk7rjFn6mpgbBXOcoM'
         self.base_len = len(self.alphabet)
-        self.code_fix_len = 7
+        self.code_fix_len = Limits.MAX_LEN_LINK_SHORT_CODE
 
     @staticmethod
     def _get_id_for_link() -> int:
@@ -40,9 +44,10 @@ class LinkHash:
             short_code += self.alphabet[remainder]
 
         # Укорачиваем код для использования в ссылке
-        return short_code[self.code_fix_len - 1::-1]
+        return short_code[::-1][:self.code_fix_len:]
 
     def get_short_code(self) -> str:
+        """Входная точка для генерации кода"""
         random_id = self._get_id_for_link()
         short_code = self._to_base_62(random_id)
 

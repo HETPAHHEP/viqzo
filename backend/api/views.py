@@ -1,23 +1,24 @@
-from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin
-from rest_framework.viewsets import GenericViewSet
-
-from links.models import ShortLink
+from rest_framework import status
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .serializers import LinkReadSerializer, LinkWriteSerializer
-from .services.url_short_logic import LinkHash
 
 
-class LinkViewSet(CreateModelMixin, RetrieveModelMixin, GenericViewSet):
-    """Viewset для взаимодействия со ссылками"""
-    queryset = ShortLink.objects.all()
-
-    def get_serializer_class(self):
-        if self.action == 'create':
-            return LinkWriteSerializer
-        return LinkReadSerializer
-
-    def perform_create(self, serializer):
-        instance = serializer.save()
-        shortened_link_code = LinkHash().to_base_62(instance.id)
-        instance.short_url = shortened_link_code
-        instance.save()
+class ShortLinkView(APIView):
+    """View для взаимодействия со ссылками"""
+    def post(self, request) -> Response:
+        serializer = LinkWriteSerializer(data=request.data)
+        if serializer.is_valid():
+            instance, created = serializer.save()
+            if created:
+                return Response(
+                    LinkReadSerializer(instance=instance).data,
+                    status=status.HTTP_201_CREATED
+                )
+            # ссылка уже существует
+            return Response(
+                LinkReadSerializer(instance=instance).data,
+                status=status.HTTP_200_OK
+            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
