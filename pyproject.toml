@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "viqzo"
+version = "0.1.0"
+description = ""
+authors = ["HETPAHEP"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+Django = "^4.2.2"
+djangorestframework = "^3.14.0"
+python-dotenv = "^1.0.0"
+
+[tool.poetry.group.dev.dependencies]
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
