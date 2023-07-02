@@ -20,7 +20,7 @@ class LinkWriteSerializer(serializers.Serializer):
         max_length=Limits.MAX_LEN_ORIGINAL_LINK
     )
 
-    def create(self, validated_data) -> tuple[str, bool]:
+    def create(self, validated_data) -> tuple[ShortLink, bool]:
         """Создание сокращенной ссылки для оригинальной"""
         original_link = validated_data.get('original_link')
         url, created = ShortLink.objects.get_or_create(
