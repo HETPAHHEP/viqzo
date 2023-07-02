@@ -34,6 +34,9 @@ class LinkHash:
         :returns short_code: перевод id в base62
         """
 
+        if type(link_id) is not int:
+            raise TypeError
+
         if link_id <= 0:
             raise LinkIDZeroError
 
