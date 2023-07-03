@@ -1,6 +1,7 @@
+from rest_framework import serializers
+
 from core.enums import Limits
 from links.models import ShortLink
-from rest_framework import serializers
 
 from .services.url_short_logic import LinkHash
 

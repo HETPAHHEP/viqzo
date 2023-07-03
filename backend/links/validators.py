@@ -1,6 +1,7 @@
-from core.enums import Limits
 from django.core.validators import RegexValidator
 from django.utils.translation import gettext_lazy as _
+
+from core.enums import Limits
 
 
 class ShortURLValidator(RegexValidator):
