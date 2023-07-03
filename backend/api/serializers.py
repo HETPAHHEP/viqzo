@@ -6,12 +6,15 @@ from links.models import ShortLink
 from .services.url_short_logic import LinkHash
 
 
-class LinkReadSerializer(serializers.ModelSerializer):
-    """Сериализатор для чтения ссылок"""
+class LinkShowSerializer(serializers.ModelSerializer):
+    """Сериализатор для показа ссылок"""
 
     class Meta:
         model = ShortLink
-        fields = ['original_link', 'short_url', 'created_at']
+        fields = [
+            'original_link', 'short_url', 'clicks_count',
+            'last_clicked_at', 'is_active', 'created_at'
+        ]
 
 
 class LinkWriteSerializer(serializers.Serializer):
