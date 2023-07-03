@@ -2,6 +2,8 @@ from http import HTTPStatus
 
 import pytest
 
+from tests import utils
+
 
 @pytest.mark.django_db(transaction=True)
 class Test00BasicShort:
@@ -51,4 +53,30 @@ class Test00BasicShort:
             f'POST-запрос без ссылки на api/links/ для создания короткого кода '
             f'должен возвращать ошибку со статусом 400 '
             f'(нужно добавить ссылку для сокращения).'
+        )
+
+    def test_02_01_get_original_link(self, client, valid_original_link):
+        code = utils.create_short_link(client, valid_original_link)
+        response = client.get(f'/api/links/{code}/')
+        assert (
+                response.status_code == HTTPStatus.OK and
+                response.data.get('original_link') == valid_original_link.get('original_link')
+        )
+
+    def test_02_02_check_clicks_count(self, client, valid_original_link):
+        code = utils.create_short_link(client, valid_original_link)
+        response = client.get(f'/api/links/{code}/')
+        assert (
+                response.status_code == HTTPStatus.OK and
+                response.data.get('original_link') == valid_original_link.get('original_link') and
+                response.data.get('clicks_count') == 1
+        )
+        clicked_at = response.data.get('last_clicked_at')
+
+        response = client.get(f'/api/links/{code}/')
+        assert (
+                response.status_code == HTTPStatus.OK and
+                response.data.get('original_link') == valid_original_link.get('original_link') and
+                response.data.get('clicks_count') == 2 and
+                response.data.get('last_clicked_at') != clicked_at
         )
