@@ -6,12 +6,20 @@ import pytest
 @pytest.mark.django_db(transaction=True)
 class Test00BasicShort:
 
-    def test_01_01_create_short_url_not_auth(self, client, valid_original_link, invalid_original_link):
+    def test_01_01_create_short_url_not_auth(
+            self, client, valid_original_link, invalid_original_link, very_long_link):
         response = client.post('/api/links/')
         assert response.status_code == HTTPStatus.BAD_REQUEST, (
             f'POST-запрос без ссылки на api/links/ для создания короткого кода '
             f'должен возвращать ошибку со статусом 400 '
             f'(нужно добавить ссылку для сокращения).'
+        )
+
+        response = client.post('/api/links/', data=very_long_link)
+        assert response.status_code == HTTPStatus.BAD_REQUEST, (
+            f'POST-запрос c длинной ссылкой на api/links/ для создания короткого кода '
+            f'должен возвращать ошибку со статусом 400 '
+            f'(ограничение по длине ссылки).'
         )
 
         response = client.post('/api/links/', data=valid_original_link)
