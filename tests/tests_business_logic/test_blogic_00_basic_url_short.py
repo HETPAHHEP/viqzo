@@ -1,5 +1,6 @@
-import pytest
 import re
+
+import pytest
 
 from backend.api.services.url_short_logic import LinkHash, LinkIDZeroError
 from backend.core.enums import Limits
