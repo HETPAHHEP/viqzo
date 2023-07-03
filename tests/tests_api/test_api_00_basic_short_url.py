@@ -6,22 +6,15 @@ import pytest
 @pytest.mark.django_db(transaction=True)
 class Test00BasicShort:
 
-    def test_01_01_create_short_url_not_auth(
-            self, client, valid_original_link, invalid_original_link, very_long_link):
-        response = client.post('/api/links/')
-        assert response.status_code == HTTPStatus.BAD_REQUEST, (
-            f'POST-запрос без ссылки на api/links/ для создания короткого кода '
-            f'должен возвращать ошибку со статусом 400 '
-            f'(нужно добавить ссылку для сокращения).'
+    def test_01_01_create_short_url_not_auth(self, client, valid_original_link):
+        response = client.post('/api/links/', data=valid_original_link)
+        assert response.status_code == HTTPStatus.CREATED, (
+            f'POST-запрос с валидной ссылкой от неавторизованного пользователя '
+            f'на api/links/ для создания короткого кода не возвращает ответ '
+            f'со статусом 201.'
         )
 
-        response = client.post('/api/links/', data=very_long_link)
-        assert response.status_code == HTTPStatus.BAD_REQUEST, (
-            f'POST-запрос c длинной ссылкой на api/links/ для создания короткого кода '
-            f'должен возвращать ошибку со статусом 400 '
-            f'(ограничение по длине ссылки).'
-        )
-
+    def test_01_02_create_short_link_and_check_idempotency(self, client, valid_original_link):
         response = client.post('/api/links/', data=valid_original_link)
         assert response.status_code == HTTPStatus.CREATED, (
             f'POST-запрос с валидной ссылкой от неавторизованного пользователя '
@@ -36,9 +29,26 @@ class Test00BasicShort:
             f'не возвращает ответ со статусом 200.'
         )
 
+    def test_01_03_create_short_link_with_invalid_original_link(self, client, invalid_original_link):
         response = client.post('/api/links/', data=invalid_original_link)
         assert response.status_code == HTTPStatus.BAD_REQUEST, (
             f'POST-запрос с невалидной ссылкой от неавторизованного пользователя '
             f'на api/links/ для создания короткого кода должен возвращать ответ '
             f'со статусом 400 (короткая ссылка не создается).'
+        )
+
+    def test_01_04_create_short_link_len_restrict_for_original_link(self, client, very_long_link):
+        response = client.post('/api/links/', data=very_long_link)
+        assert response.status_code == HTTPStatus.BAD_REQUEST, (
+            f'POST-запрос c длинной ссылкой на api/links/ для создания короткого кода '
+            f'должен возвращать ошибку со статусом 400 '
+            f'(ограничение по длине ссылки).'
+        )
+
+    def test_01_05_create_short_link_without_original_link(self, client):
+        response = client.post('/api/links/')
+        assert response.status_code == HTTPStatus.BAD_REQUEST, (
+            f'POST-запрос без ссылки на api/links/ для создания короткого кода '
+            f'должен возвращать ошибку со статусом 400 '
+            f'(нужно добавить ссылку для сокращения).'
         )
