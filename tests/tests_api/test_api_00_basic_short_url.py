@@ -7,6 +7,13 @@ import pytest
 class Test00BasicShort:
 
     def test_01_01_create_short_url_not_auth(self, client, valid_original_link, invalid_original_link):
+        response = client.post('/api/links/')
+        assert response.status_code == HTTPStatus.BAD_REQUEST, (
+            f'POST-запрос без ссылки на api/links/ для создания короткого кода '
+            f'должен возвращать ошибку со статусом 400 '
+            f'(нужно добавить ссылку для сокращения).'
+        )
+
         response = client.post('/api/links/', data=valid_original_link)
         assert response.status_code == HTTPStatus.CREATED, (
             f'POST-запрос с валидной ссылкой от неавторизованного пользователя '
