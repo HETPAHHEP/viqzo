@@ -1,19 +1,19 @@
 from django.urls import path
 
-from .views import ShortLinkView
+from .views import CreateShortLinkView, GetShortLinkView
 
-VERSION = '1'
+VERSION = 'v1'
 
 
 urlpatterns = [
     path(
         'links/',
-        ShortLinkView.as_view(),
+        CreateShortLinkView.as_view(),
         name='short-link-create'
     ),
     path(
         'links/<str:short_url>/',
-        ShortLinkView.as_view(),
+        GetShortLinkView.as_view(),
         name='short-link-detail'
     )
 ]

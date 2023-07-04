@@ -8,8 +8,8 @@ from links.models import ShortLink
 from .serializers import LinkShowSerializer, LinkWriteSerializer
 
 
-class ShortLinkView(APIView):
-    """View для взаимодействия со ссылками"""
+class GetShortLinkView(APIView):
+    """View для получения короткой ссылки"""
 
     def get(self, request, short_url) -> Response:
         try:
@@ -26,6 +26,10 @@ class ShortLinkView(APIView):
                 {"error": _("Ссылка не найдена.")},
                 status=status.HTTP_404_NOT_FOUND
             )
+
+
+class CreateShortLinkView(APIView):
+    """View для создания (или получения) короткой ссылки"""
 
     def post(self, request) -> Response:
         serializer = LinkWriteSerializer(data=request.data)
