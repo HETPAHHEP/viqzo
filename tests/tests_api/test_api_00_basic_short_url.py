@@ -61,6 +61,9 @@ class Test00BasicShort:
         assert (
                 response.status_code == HTTPStatus.OK and
                 response.data.get('original_link') == valid_original_link.get('original_link')
+        ), (
+            f'GET-запрос с кодом на api/links/{code}/ для получения полной ссылки '
+            f'не вернул нужную ссылку. '
         )
 
     def test_02_02_check_clicks_count(self, client, valid_original_link):
@@ -70,7 +73,11 @@ class Test00BasicShort:
                 response.status_code == HTTPStatus.OK and
                 response.data.get('original_link') == valid_original_link.get('original_link') and
                 response.data.get('clicks_count') == 1
+        ), (
+            f'GET-запрос с кодом на api/links/{code}/ для получения полной ссылки '
+            f'не вернул нужную ссылку с кликами на неё. '
         )
+
         clicked_at = response.data.get('last_clicked_at')
 
         response = client.get(f'/api/links/{code}/')
@@ -79,4 +86,7 @@ class Test00BasicShort:
                 response.data.get('original_link') == valid_original_link.get('original_link') and
                 response.data.get('clicks_count') == 2 and
                 response.data.get('last_clicked_at') != clicked_at
+        ), (
+            f'GET-запрос с кодом на api/links/{code}/ для получения полной ссылки '
+            f'не посчитал повторно клики на нужную ссылку. '
         )
