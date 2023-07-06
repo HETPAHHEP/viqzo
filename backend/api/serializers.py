@@ -1,9 +1,9 @@
-from rest_framework import serializers
 from django.utils.translation import gettext_lazy as _
+from rest_framework import serializers
 
 from core.enums import Limits
-from links.models import ShortLink, AliasShortLink
 from links import validators
+from links.models import AliasShortLink, ShortLink
 
 from .services.url_short_logic import LinkHash
 

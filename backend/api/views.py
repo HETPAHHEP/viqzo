@@ -3,9 +3,10 @@ from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from links.models import ShortLink, AliasShortLink
+from links.models import AliasShortLink, ShortLink
 
-from .serializers import ShortLinkShowSerializer, LinkWriteSerializer, AliasLinkShowSerializer
+from .serializers import (AliasLinkShowSerializer, LinkWriteSerializer,
+                          ShortLinkShowSerializer)
 
 
 class BaseShortLinkView(APIView):
