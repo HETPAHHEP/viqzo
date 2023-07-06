@@ -98,3 +98,67 @@ STATIC_URL = 'static/'
 
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+# EMAIL BACKEND FOR PRODUCTION
+EMAIL_BACKEND = os.getenv('EMAIL_BACKEND')
+EMAIL_HOST = os.getenv('EMAIL_HOST')
+EMAIL_PORT = os.getenv('EMAIL_PORT')
+EMAIL_USE_SSL = True
+
+EMAIL_HOST_USER = os.getenv('EMAIL')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASSWORD')
+
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+SERVER_EMAIL = EMAIL_HOST_USER
+EMAIL_ADMIN = EMAIL_HOST_USER
+
+
+# LOGGING
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} "
+                      "{process:d} {thread:d} {message}",
+            "style": "{",
+        },
+        "telegram_message": {
+            "format": "❌ Пришла ошибка с сервера! \n\n"
+                      "{levelname} {asctime} {module} "
+                      "{process:d} {thread:d} {message} \n\n",
+            "style": "{",
+        },
+        "simple": {
+            "format": "{levelname} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "mail_admins": {
+            "level": "ERROR",
+            "class": "django.utils.log.AdminEmailHandler",
+        },
+        "telegram_bot": {
+            "level": "ERROR",
+            "class": "viqzo.handlers.TelegramBotHandler",
+            'chat_id': str(os.getenv('TELEGRAM_CHAT_ID')),
+            'token': str(os.getenv('TELEGRAM_BOT_TOKEN')),
+            'formatter': 'telegram_message',
+        },
+    },
+    "loggers": {
+        "django.admin_email": {
+            "handlers": ["mail_admins"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+        "django.bot": {
+            "handlers": ["telegram_bot"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+    },
+}
