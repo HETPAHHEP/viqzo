@@ -1,6 +1,8 @@
 import pytest
 
 
+# БАЗОВЫЕ ФИКСТУРЫ
+
 @pytest.fixture()
 def valid_original_link():
     link = 'https://www.youtube.com/watch?v=dQw4w9WgXcQ'
