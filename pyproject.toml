@@ -13,6 +13,7 @@ djangorestframework = "3.14.0"
 python-dotenv = "1.0.0"
 pytelegrambotapi = "4.12.0"
 djoser = "2.2.0"
+webcolors = "^1.13"
 
 [tool.poetry.group.dev.dependencies]
 mypy = "1.4.1"
