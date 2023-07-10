@@ -4,8 +4,12 @@ from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from core.enums import Limits
+from users.models import User
 
 from . import validators
+from .services.user_campaigns import check_campaign_group_constraints
+from .services.user_groups import check_group_constraints
+from .validators import HexColorValidator
 
 
 class BaseShortLink(models.Model):
@@ -65,10 +69,19 @@ class ShortLink(BaseShortLink):
             )
         ]
     )
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name=_('Владелец короткой ссылки'),
+        related_name='short_owner',
+        blank=True,
+        null=True,
+    )
 
     class Meta:
         verbose_name = _('Короткая ссылка')
         verbose_name_plural = _('Короткие ссылки')
+        db_table = 'links_short_link'
         constraints = [
             models.UniqueConstraint(
                 name='unique_link_shortcode',
@@ -77,8 +90,12 @@ class ShortLink(BaseShortLink):
         ]
         ordering = [
             'original_link', 'short_url', 'created_at',
-            'clicks_count', 'last_clicked_at', 'is_active'
+            'clicks_count', 'last_clicked_at', 'is_active',
+            'owner'
         ]
+
+    def __str__(self):
+        return self.short_url
 
 
 class AliasShortLink(BaseShortLink):
@@ -100,6 +117,14 @@ class AliasShortLink(BaseShortLink):
             )
         ]
     )
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name=_('Владелец пользовательской ссылки'),
+        related_name='alias_owner',
+        blank=True,
+        null=True,
+    )
 
     class Meta:
         verbose_name = _('Пользовательская ссылка')
@@ -113,5 +138,111 @@ class AliasShortLink(BaseShortLink):
         ]
         ordering = [
             'original_link', 'alias', 'created_at',
-            'clicks_count', 'last_clicked_at', 'is_active'
+            'clicks_count', 'last_clicked_at', 'is_active',
+            'owner'
         ]
+
+    def __str__(self):
+        return self.alias
+
+
+class UserGroup(models.Model):
+    """Пользовательская группа со ссылками пользователя"""
+    name = models.CharField(
+        max_length=Limits.MAX_LEN_GROUP_NAME.value,
+        verbose_name=_('Имя группы'),
+    )
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name=_('Владелец группы'),
+        related_name='group_owner'
+    )
+    color = models.CharField(
+        max_length=7,
+        validators=[HexColorValidator],
+        default='#FFFFFF',
+        verbose_name=_('Цвет'),
+    )
+    alias_links = models.ForeignKey(
+        AliasShortLink,
+        on_delete=models.CASCADE,
+        verbose_name=_('Пользовательские ссылки группы'),
+    )
+    short_links = models.ForeignKey(
+        ShortLink,
+        on_delete=models.CASCADE,
+        verbose_name=_('Короткие ссылки группы'),
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name=_('Дата создания')
+    )
+
+    class Meta:
+        verbose_name = _('Группа ссылок')
+        verbose_name_plural = _('Группы ссылок')
+        db_table = 'links_user_group'
+        # constraints = [
+        #     models.UniqueConstraint(
+        #         name='unique_name_per_owner',
+        #         fields=['name', 'owner'],
+        #         violation_error_message=_('Такая группа уже существует.')
+        #     )
+        # ]
+
+    def __str__(self):
+        return self.name
+
+    def clean(self):
+        """Проверка ограничений"""
+        check_group_constraints(self)
+
+    def save(self, *args, **kwargs):
+        self.full_clean()  # Выполняем проверку перед сохранением
+        super().save(*args, **kwargs)
+
+
+class UserCampaign(models.Model):
+    name = models.CharField(
+        max_length=Limits.MAX_LEN_CAMPAIGN_NAME.value,
+        verbose_name=_('Имя группы')
+    )
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name=_('Владелец компании'),
+        related_name='campaign_owner'
+    )
+    groups = models.ForeignKey(
+        UserGroup,
+        on_delete=models.CASCADE,
+        verbose_name=_('Группы компании'),
+        related_name="groups",
+        related_query_name="group",
+    )
+
+    class Meta:
+        verbose_name = _('Компания')
+        verbose_name_plural = _('Компании')
+        db_table = 'links_user_campaign'
+        constraints = [
+            models.UniqueConstraint(
+                name='unique_campaign_name_per_owner',
+                fields=['name', 'owner'],
+                violation_error_message=_(
+                    'Такая компания уже существует.'
+                )
+            )
+        ]
+
+    def __str__(self):
+        return self.name
+
+    def clean(self):
+        """Проверка ограничений"""
+        check_campaign_group_constraints(self)
+
+    def save(self, *args, **kwargs):
+        self.full_clean()  # Выполняем проверку перед сохранением
+        super().save(*args, **kwargs)

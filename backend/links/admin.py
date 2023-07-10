@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import ShortLink, AliasShortLink
+from .models import AliasShortLink, ShortLink
 
 
 @admin.register(ShortLink)

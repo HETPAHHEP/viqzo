@@ -1,8 +1,11 @@
-from core.enums import Limits
-from rest_framework.validators import ValidationError
-from .colors import colors_palette
 from random import choice
+
 from django.utils.translation import gettext_lazy as _
+from rest_framework.validators import ValidationError
+
+from core.enums import Limits
+
+from .colors import colors_palette
 
 
 def check_group_constraints(instance):
@@ -30,12 +33,15 @@ def set_color_for_group(instance) -> str:
     """Добавление цвета к группе"""
 
     # Получаем список цветов, которые уже используются
-    # used_colors = UserGroup.objects.exclude(pk=instance.pk).values_list('color', flat=True)
-    used_colors = instance.objects.exclude(pk=instance.pk).values_list('color', flat=True)
+    # used_colors = UserGroup.objects.exclude(
+    # pk=instance.pk).values_list('color', flat=True)
+    used_colors = instance.objects.exclude(
+        pk=instance.pk).values_list('color', flat=True)
 
     # Получаем список доступных цветов, которые еще не использованы
     available_colors = [
-        color.color_hex for color in colors_palette if color.color_hex not in used_colors
+        color.color_hex for color in colors_palette
+        if color.color_hex not in used_colors
     ]
 
     if not available_colors:

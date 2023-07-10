@@ -1,6 +1,6 @@
-from typing import Pattern
-from dataclasses import dataclass, field
 import re
+from dataclasses import dataclass
+from typing import Pattern
 
 from PIL import Image, ImageDraw
 
