@@ -25,6 +25,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
+    'rest_framework.authtoken',
+    'djoser',
 
     'api',
     'links',
@@ -160,5 +162,38 @@ LOGGING = {
             "level": "ERROR",
             "propagate": False,
         },
+    },
+}
+
+
+# REST FRAMEWORK
+
+# REST_FRAMEWORK = {
+#     'DEFAULT_AUTHENTICATION_CLASSES': [
+#         'rest_framework.authentication.SessionAuthentication',
+#         'rest_framework.authentication.TokenAuthentication'
+#     ]
+# }
+
+# DJOSER SETTINGS
+
+DJOSER = {
+    # 'SEND_ACTIVATION_EMAIL': True,
+    'SEND_CONFIRMATION_EMAIL': True,
+
+    'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
+    'USERNAME_CHANGED_EMAIL_CONFIRMATION': True,
+
+    'PASSWORD_RESET_SHOW_EMAIL_NOT_FOUND': True,
+    'USERNAME_RESET_SHOW_EMAIL_NOT_FOUND': True,
+
+    'PASSWORD_RESET_CONFIRM_RETYPE': True,
+
+    'LOGOUT_ON_PASSWORD_CHANGE': True,
+
+    # 'HIDE_USERS': False,
+
+    'PERMISSIONS': {
+        'user_list': ['rest_framework.permissions.IsAdminUser']
     },
 }
