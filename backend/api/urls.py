@@ -1,19 +1,18 @@
-from django.urls import path
+from django.urls import include, path
 
-from .views import CreateShortLinkView, GetShortLinkView
+from .views import CreateShortLinkView, LinkActionsView
 
 VERSION = 'v1'
 
 
 urlpatterns = [
-    path(
-        'links/',
-        CreateShortLinkView.as_view(),
-        name='short-link-create'
-    ),
+    path('', include('djoser.urls')),
+    path('auth/', include('djoser.urls.authtoken')),
+
+    path('links/', CreateShortLinkView.as_view(), name='link-create'),
     path(
         'links/<str:short_url>/',
-        GetShortLinkView.as_view(),
-        name='short-link-detail'
-    )
+        LinkActionsView.as_view(),
+        name='link-actions'
+    ),
 ]

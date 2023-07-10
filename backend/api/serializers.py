@@ -1,3 +1,5 @@
+from typing import OrderedDict
+
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
@@ -5,7 +7,7 @@ from core.enums import Limits
 from links import validators
 from links.models import AliasShortLink, ShortLink
 
-from .services.url_short_logic import LinkHash
+from .services.short_links import create_link, validate_alias
 
 
 class ShortLinkShowSerializer(serializers.ModelSerializer):
@@ -24,7 +26,7 @@ class AliasLinkShowSerializer(serializers.ModelSerializer):
     short_url = serializers.CharField(source='alias')
 
     class Meta:
-        model = ShortLink
+        model = AliasShortLink
         fields = [
             'original_link', 'short_url', 'clicks_count',
             'last_clicked_at', 'is_active', 'created_at'
@@ -43,42 +45,22 @@ class LinkWriteSerializer(serializers.Serializer):
         required=False
     )
 
-    def validate(self, attrs):
-        alias = attrs.get('alias')
+    def validate(self, data: OrderedDict) -> OrderedDict:
+        """Валидация данных"""
+        return validate_alias(data)
 
-        if alias:
-
-            if AliasShortLink.objects.filter(alias=alias).exists():
-                raise serializers.ValidationError({
-                    'alias_error': _('Данный код для ссылки уже занят.')
-                })
-
-        return attrs
-
-    def create(self, validated_data) -> tuple[ShortLink, bool]:
+    def create(self, valid_data) -> tuple[ShortLink | AliasShortLink, bool]:
         """Создание сокращенной ссылки для оригинальной"""
-        original_link = validated_data.get('original_link')
-        alias = validated_data.get('alias')
+        user = self.context.get('request').user
 
-        if alias:
-            url = AliasShortLink.objects.create(
-                original_link=original_link,
-                alias=alias
-            )
-            created = True
+        if user.is_authenticated:
+            return create_link(valid_data, user)
+        return create_link(valid_data)
 
-        else:
-            url, created = ShortLink.objects.get_or_create(
-                original_link=original_link
-            )
 
-        if created and not alias:
-            while not url.short_url:
-                # проверяем, не занят ли короткий код и присваиваем его ссылке
-                short_code = LinkHash().get_short_code()
-
-                if not ShortLink.objects.filter(short_url=short_code).exists():
-                    url.short_url = short_code
-                    url.save()
-
-        return url, created
+class LinkActivationSerializer(serializers.Serializer):
+    """Сериализатор для активации/деактивации"""
+    is_active = serializers.BooleanField(
+        write_only=True,
+        help_text=_('Активна ли ссылка?')
+    )
