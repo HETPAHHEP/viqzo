@@ -9,7 +9,7 @@ class ShortURLValidator(RegexValidator):
     max_val = Limits.MAX_LEN_LINK_SHORT_CODE.value
 
     regex = fr'^[a-zA-Z0-9]{max_val}$'
-    message = _('Короткий код ссылки недействителен')
+    message = _('Короткий код ссылки недействителен.')
     code = 'short_url_error'
 
 
@@ -19,5 +19,12 @@ class AliasShortURLValidator(RegexValidator):
     max_val = Limits.MAX_LEN_ALIAS_CODE.value
 
     regex = fr'^[a-zA-Z0-9]{min_val, max_val}$'
-    message = _('Пользовательский код ссылки недействителен')
+    message = _('Пользовательский код ссылки недействителен.')
     code = 'alias_url_error'
+
+
+class HexColorValidator(RegexValidator):
+    """Валидатор hex-кода цвета"""
+    regex = r'^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$'
+    message = _('Цвет не соответствует hex кодировке.')
+    code = 'invalid_hex_color'
