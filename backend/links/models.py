@@ -1,15 +1,17 @@
+from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 from core.enums import Limits
-from users.models import User
 
 from . import validators
 from .services.user_campaigns import check_campaign_group_constraints
 from .services.user_groups import check_group_constraints
 from .validators import HexColorValidator
+
+User = get_user_model()
 
 
 class BaseShortLink(models.Model):

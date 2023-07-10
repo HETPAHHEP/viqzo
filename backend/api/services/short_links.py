@@ -1,10 +1,12 @@
+from django.contrib.auth import get_user_model
 from django.utils.translation import gettext_lazy as _
 from rest_framework.validators import ValidationError
 
 from links.models import AliasShortLink, ShortLink
-from users.models import User
 
 from .url_short_logic import LinkHash
+
+User = get_user_model()
 
 
 def create_link(
