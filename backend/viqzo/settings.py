@@ -152,15 +152,9 @@ LOGGING = {
         },
     },
     "loggers": {
-        "django.admin_email": {
-            "handlers": ["mail_admins"],
+        "django.request": {
+            "handlers": ["mail_admins", "telegram_bot"],
             "level": "ERROR",
-            "propagate": False,
-        },
-        "django.bot": {
-            "handlers": ["telegram_bot"],
-            "level": "ERROR",
-            "propagate": False,
         },
     },
 }
@@ -168,12 +162,11 @@ LOGGING = {
 
 # REST FRAMEWORK
 
-# REST_FRAMEWORK = {
-#     'DEFAULT_AUTHENTICATION_CLASSES': [
-#         'rest_framework.authentication.SessionAuthentication',
-#         'rest_framework.authentication.TokenAuthentication'
-#     ]
-# }
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication'
+    ]
+}
 
 # DJOSER SETTINGS
 
