@@ -93,3 +93,12 @@ class Test00BasicShort:
             f'GET-запрос с кодом на api/links/{code}/ для получения полной ссылки '
             f'не посчитал повторно клики на нужную ссылку. '
         )
+
+    def test_03_01_create_short_url_auth(self, user_client, valid_original_link):
+        response = user_client.post('/api/links/', data=valid_original_link)
+        assert (
+            response.status_code == HTTPStatus.CREATED
+        ), (
+            f'POST-запрос с валидной ссылкой от авторизованного пользователя '
+            f'на api/links/ для создания короткого кода не возвращает ответ со статусом 201.'
+        )

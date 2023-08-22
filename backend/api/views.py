@@ -29,7 +29,7 @@ class CreateShortLinkView(BaseShortLinkView):
         """Создание или получения уже созданных коротких ссылок"""
 
         serializer = self.serializer_create(
-            data=request.data, context={'request': request}
+            data=request.data, context={'user': request.user}
         )
         if serializer.is_valid():
             instance, created = serializer.save()
@@ -94,57 +94,26 @@ class LinkActionsView(BaseShortLinkView):
         short_link = short_link.first()
 
         serializer = self.serializer_edit(data=request.data)
-        serializer_response = self.get_serializer(short_link)
 
-        status_active = serializer.data.get('is_active')
+        if serializer.is_valid():
+            serializer_response = self.get_serializer(short_link)
 
-        if status_active == short_link.is_active:
+            status_active = serializer.data.get('is_active')
+
+            if status_active == short_link.is_active:
+                return Response(
+                    status=status.HTTP_204_NO_CONTENT
+                )
+
+            short_link.is_active = status_active
+            short_link.save()
+
             return Response(
-                status=status.HTTP_204_NO_CONTENT
+                serializer_response(instance=short_link).data,
+                status=status.HTTP_200_OK
             )
 
-        short_link.is_active = status_active
-        short_link.save()
-
         return Response(
-            serializer_response(instance=short_link).data,
-            status=status.HTTP_200_OK
+            serializer.errors,
+            status=status.HTTP_400_BAD_REQUEST
         )
-
-
-# class ActivateLinkView(BaseShortLinkView):
-#     serializer_edit = LinkActivationSerializer
-#     permission_classes = [IsOwnerAdminOrReadOnly]
-#
-#     def patch(self, request, short_url) -> Response:
-#         """Изменение ссылки"""
-#
-#         short_link = ShortLink.objects.filter(short_url=short_url)
-#
-#         if not short_link:
-#             short_link = AliasShortLink.objects.filter(alias=short_url)
-#
-#             if not short_link:
-#                 return Response(
-#                     {"error": _("Ссылка не найдена.")},
-#                     status=status.HTTP_404_NOT_FOUND
-#                 )
-#         short_link = short_link.first()
-#
-#         serializer = self.serializer_edit(data=request.data)
-#         serializer_response = self.get_serializer(short_link)
-#
-#         status_active = serializer.data.get('is_active')
-#
-#         if status_active == short_link.is_active:
-#             return Response(
-#                 status=status.HTTP_204_NO_CONTENT
-#             )
-#
-#         short_link.is_active = status_active
-#         short_link.save()
-#
-#         return Response(
-#                 serializer_response(instance=short_link).data,
-#                 status=status.HTTP_200_OK
-#             )

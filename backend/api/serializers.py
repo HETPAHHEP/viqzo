@@ -1,6 +1,7 @@
 from typing import OrderedDict
 
 from django.utils.translation import gettext_lazy as _
+from django.db.transaction import atomic
 from rest_framework import serializers
 
 from core.enums import Limits
@@ -49,9 +50,10 @@ class LinkWriteSerializer(serializers.Serializer):
         """Валидация данных"""
         return validate_alias(data)
 
+    @atomic
     def create(self, valid_data) -> tuple[ShortLink | AliasShortLink, bool]:
         """Создание сокращенной ссылки для оригинальной"""
-        user = self.context.get('request').user
+        user = self.context.get('user')
 
         if user.is_authenticated:
             return create_link(valid_data, user)
@@ -61,6 +63,5 @@ class LinkWriteSerializer(serializers.Serializer):
 class LinkActivationSerializer(serializers.Serializer):
     """Сериализатор для активации/деактивации"""
     is_active = serializers.BooleanField(
-        write_only=True,
         help_text=_('Активна ли ссылка?')
     )
