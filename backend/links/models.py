@@ -158,7 +158,7 @@ class UserGroup(models.Model):
         User,
         on_delete=models.CASCADE,
         verbose_name=_('Владелец группы'),
-        related_name='group_owner'
+        related_name='group_owner',
     )
     color = models.CharField(
         max_length=7,

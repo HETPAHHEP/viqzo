@@ -6,7 +6,7 @@ from rest_framework import serializers
 
 from core.enums import Limits
 from links import validators
-from links.models import AliasShortLink, ShortLink
+from links.models import AliasShortLink, ShortLink, User
 
 from .services.short_links import create_link, validate_alias
 
@@ -65,3 +65,8 @@ class LinkActivationSerializer(serializers.Serializer):
     is_active = serializers.BooleanField(
         help_text=_('Активна ли ссылка?')
     )
+
+
+class UserGroupSerializer(serializers.Serializer):
+    model = User
+    fields = ['name']
