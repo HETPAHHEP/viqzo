@@ -39,3 +39,12 @@ def create_alias_link(client, original_link_with_alias) -> str:
 
     raise KeyError('пользовательского код для ссылки отсутствует при создании')
 
+
+def create_usergroup(client, name_for_usergroup):
+    """Создание группы для пользовательских ссылок.
+
+    """
+
+    response = client.post('/api/groups/', data=name_for_usergroup)
+    assert response
+

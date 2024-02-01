@@ -1,12 +1,13 @@
 from typing import OrderedDict
 
-from django.utils.translation import gettext_lazy as _
 from django.db.transaction import atomic
+from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from core.enums import Limits
 from links import validators
-from links.models import AliasShortLink, ShortLink, User
+from links.models import (AliasShortLink, ShortLink, User, UserGroup,
+                          UserGroupLink)
 
 from .services.short_links import create_link, validate_alias
 
@@ -67,6 +68,56 @@ class LinkActivationSerializer(serializers.Serializer):
     )
 
 
-class UserGroupSerializer(serializers.Serializer):
-    model = User
-    fields = ['name']
+class UserGroupCreateSerializer(serializers.ModelSerializer):
+    """Сериализатор для создания группы"""
+
+    class Meta:
+        model = UserGroup
+        fields = [
+            'name',
+        ]
+
+
+class UserGroupWriteSerializer(serializers.ModelSerializer):
+    """Сериализатор для создания группы"""
+
+    class Meta:
+        model = UserGroup
+        fields = [
+            'name',
+        ]
+
+
+# class UserGroupsShowSerializer(serializers.ModelSerializer):
+#     """Сериализатор для показа группы"""
+#
+#     class Meta:
+#         model = UserGroup
+#         fields = [
+#             'name', 'color', 'created_at',
+#         ]
+
+
+class UserGroupLinkReadSerializer(serializers.ModelSerializer):
+    """Сериализатор для просмотра группы"""
+    name = serializers.ReadOnlyField(source='group.name')
+    color = serializers.ReadOnlyField(source='group.color')
+    created_at = serializers.ReadOnlyField(source='group.created_at')
+
+    class Meta:
+        model = UserGroupLink
+        fields = [
+            'id', 'name', 'color',
+            'created_at', 'alias_link', 'short_link'
+        ]
+
+
+# class UserGroupLinkWriteSerializer(serializers.ModelSerializer):
+#     """Сериализатор для добавления ссылки в группу"""
+#     model = UserGroup
+#     fields = [
+#         'name',
+#     ]
+
+
+

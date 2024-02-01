@@ -1,13 +1,17 @@
 from django.utils.translation import gettext_lazy as _
-from rest_framework import status
+from rest_framework import generics, mixins, status, viewsets
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from links.models import AliasShortLink, ShortLink
+from links.models import AliasShortLink, ShortLink, UserGroup, UserGroupLink
 
 from .permissons import IsOwnerAdminOrReadOnly
 from .serializers import (AliasLinkShowSerializer, LinkActivationSerializer,
-                          LinkWriteSerializer, ShortLinkShowSerializer)
+                          LinkWriteSerializer, ShortLinkShowSerializer,
+                          UserGroupCreateSerializer,
+                          UserGroupLinkReadSerializer,
+                          UserGroupWriteSerializer)
 
 
 class BaseShortLinkView(APIView):
@@ -117,3 +121,47 @@ class LinkActionsView(BaseShortLinkView):
             serializer.errors,
             status=status.HTTP_400_BAD_REQUEST
         )
+
+
+class CreateGroupViewSet(mixins.CreateModelMixin,
+                         mixins.ListModelMixin,
+                         viewsets.GenericViewSet):
+    """Создание/просмотр групп для ссылок"""
+    # queryset = UserGroup.objects.all()
+
+    def get_permissions(self):
+        """Выдача разрешения в зависимости от действия"""
+        permission_classes = []
+
+        if self.action == 'create':
+            permission_classes = [IsAuthenticated]
+        if self.action == 'list':
+            permission_classes = [IsOwnerOrAdmin]
+        return [permission() for permission in permission_classes]
+
+    def get_queryset(self):
+        if self.action == 'create':
+            return UserGroup.objects.all()
+        return UserGroupLink.objects.all()
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return UserGroupCreateSerializer
+        return UserGroupReadSerializer
+
+
+class CreateGroupView(generics.CreateAPIView):
+    queryset = UserGroup.objects.all()
+    serializer_class = UserGroupCreateSerializer
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        serializer.save(owner=self.request.user)
+
+
+# class GroupLinkViewActions(APIView):
+#     """View для получения/добавления/удаления ссылки из группы"""
+#     queryset = UserGroupLinks.objects.all()
+#     # serializer_class = UserGroupWriteSerializer
+#     permission_classes = [IsOwnerAdminOrReadOnly]
+

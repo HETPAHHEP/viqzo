@@ -23,7 +23,7 @@ class TelegramBotHandler(Handler):
 
                 bot.send_message(
                     self.chat_id,
-                    f'{numb + 1}/{messages_amount}\n' + format_message
+                    f'🫨 {numb + 1}/{messages_amount}\n' + format_message
                 )
         else:
             bot.send_message(

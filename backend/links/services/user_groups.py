@@ -8,11 +8,10 @@ from core.enums import Limits
 from .colors import colors_palette
 
 
-def check_group_constraints(instance):
-    """Проверка ограничений группы"""
-    alias_count = instance.alias_links.count()
-    short_count = instance.short_links.count()
-    groups_count = instance.objects.filter(owner=instance.owner).count()
+def check_links_group_constraints(model):
+    """Проверка ограничений ссылок в группе"""
+    alias_count = model.alias_link.count()
+    short_count = model.short_link.count()
 
     if alias_count + short_count >= Limits.MAX_LINKS_GROUP_AMOUNT:
         raise ValidationError({
@@ -20,6 +19,11 @@ def check_group_constraints(instance):
                 'Превышено максимальное количество ссылок для этой группы.'
             )
         })
+
+
+def check_group_constraints(model, user):
+    """Проверка ограничений группы"""
+    groups_count = model.objects.filter(owner=user).count()
 
     if groups_count >= Limits.MAX_GROUPS_AMOUNT:
         raise ValidationError({
@@ -29,13 +33,13 @@ def check_group_constraints(instance):
         })
 
 
-def set_color_for_group(instance) -> str:
+def set_color_for_group(model, instance) -> str:
     """Добавление цвета к группе"""
 
     # Получаем список цветов, которые уже используются
     # used_colors = UserGroup.objects.exclude(
     # pk=instance.pk).values_list('color', flat=True)
-    used_colors = instance.objects.exclude(
+    used_colors = model.objects.exclude(
         pk=instance.pk).values_list('color', flat=True)
 
     # Получаем список доступных цветов, которые еще не использованы

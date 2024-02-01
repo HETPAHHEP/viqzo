@@ -1,6 +1,6 @@
 import pytest
-from backend.core.enums import Limits
 
+from backend.core.enums import Limits
 
 # ФИКСТУРЫ ПОЛЬЗОВАТЕЛЬСКИХ ССЫЛОК
 

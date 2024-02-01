@@ -1,6 +1,5 @@
 import pytest
 
-
 # БАЗОВЫЕ ФИКСТУРЫ
 
 @pytest.fixture()
