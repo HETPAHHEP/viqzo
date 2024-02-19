@@ -14,6 +14,14 @@ def name_for_usergroup():
 
 
 @pytest.fixture()
+def new_name_for_usergroup():
+    name_group = 'New Name'
+    return {
+        'name': name_group
+    }
+
+
+@pytest.fixture()
 def very_long_name_for_usergroup():
     name_group = 'a' * Limits.MAX_LEN_GROUP_NAME + 'a'
     return {

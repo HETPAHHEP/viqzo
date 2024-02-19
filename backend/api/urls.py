@@ -1,13 +1,12 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from .views import (CreateGroupView, CreateGroupViewSet, CreateShortLinkView,
-                    LinkActionsView)
+from .views import CreateShortLinkView, LinkActionsView, UserGroupLinkViewSet
 
 VERSION = 'v1'
 
 router = DefaultRouter()
-# router.register(r'groups', CreateGroupViewSet, basename='groups')
+router.register(r'groups', UserGroupLinkViewSet, basename='group-actions')
 
 
 urlpatterns = [
@@ -20,7 +19,6 @@ urlpatterns = [
         LinkActionsView.as_view(),
         name='link-actions'
     ),
-    path('groups/', CreateGroupView.as_view(), name='group-create'),
 ]
 
 urlpatterns += router.urls

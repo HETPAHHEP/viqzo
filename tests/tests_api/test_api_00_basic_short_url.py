@@ -7,7 +7,7 @@ from tests import utils
 
 @pytest.mark.django_db(transaction=True)
 class Test00BasicShort:
-
+    """Тестирование API коротких ссылок"""
     def test_01_01_create_short_url_not_auth(self, client, valid_original_link):
         response = client.post('/api/links/', data=valid_original_link)
         assert response.status_code == HTTPStatus.CREATED, (

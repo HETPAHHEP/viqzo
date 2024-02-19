@@ -1,16 +1,20 @@
+from django.shortcuts import get_object_or_404
 from django.utils.translation import gettext_lazy as _
 from rest_framework import generics, mixins, status, viewsets
+from rest_framework.decorators import action as new_action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from links.models import AliasShortLink, ShortLink, UserGroup, UserGroupLink
 
-from .permissons import IsOwnerAdminOrReadOnly
+from .permissons import IsOwnerAdminOrReadOnly, IsOwnerOrAdmin
 from .serializers import (AliasLinkShowSerializer, LinkActivationSerializer,
                           LinkWriteSerializer, ShortLinkShowSerializer,
                           UserGroupCreateSerializer,
-                          UserGroupLinkReadSerializer,
+                          UserGroupLinksWriteSerializer,
+                          UserGroupReadSerializer,
+                          UserGroupWithLinksReadSerializer,
                           UserGroupWriteSerializer)
 
 
@@ -123,45 +127,126 @@ class LinkActionsView(BaseShortLinkView):
         )
 
 
-class CreateGroupViewSet(mixins.CreateModelMixin,
-                         mixins.ListModelMixin,
-                         viewsets.GenericViewSet):
-    """Создание/просмотр групп для ссылок"""
-    # queryset = UserGroup.objects.all()
+class UserGroupLinkViewSet(viewsets.ModelViewSet):
+    """Viewset для получения/добавления/удаления ссылки из группы,
+    а также изменения информации о группе.
+    """
+    actions_without_create = [
+        'list', 'retrieve', 'update',
+        'partial_update', 'destroy'
+    ]
 
     def get_permissions(self):
         """Выдача разрешения в зависимости от действия"""
-        permission_classes = []
+        permission_classes = []  # noqa
 
         if self.action == 'create':
             permission_classes = [IsAuthenticated]
-        if self.action == 'list':
+        if self.action in self.actions_without_create:
             permission_classes = [IsOwnerOrAdmin]
         return [permission() for permission in permission_classes]
 
     def get_queryset(self):
-        if self.action == 'create':
-            return UserGroup.objects.all()
-        return UserGroupLink.objects.all()
+        if not self.request.user.is_staff:
+            return UserGroup.objects.filter(owner=self.request.user)
+        return UserGroup.objects.all()
 
     def get_serializer_class(self):
         if self.action == 'create':
             return UserGroupCreateSerializer
-        return UserGroupReadSerializer
+        if self.action in ('list', 'retrieve'):
+            return UserGroupWithLinksReadSerializer
+        if self.action in ('update', 'partial_update'):
+            return UserGroupWriteSerializer
 
+    @new_action(detail=True, methods=['post'], url_path='add-link', url_name='add-link')
+    def add_link_to_group(self, request, pk=None):
+        """Добавить ссылку в нужную группу"""
+        group = self.get_object()
+        serializer_links = UserGroupLinksWriteSerializer(
+            data=request.data,
+            context={
+                'request': request
+            }
+        )
 
-class CreateGroupView(generics.CreateAPIView):
-    queryset = UserGroup.objects.all()
-    serializer_class = UserGroupCreateSerializer
-    permission_classes = [IsAuthenticated]
+        if serializer_links.is_valid(raise_exception=True):
+            alias_link = serializer_links.validated_data.get('alias_link')
+            short_link = serializer_links.validated_data.get('short_link')
+
+            if ((
+                    UserGroupLink.objects.filter(group=group, alias_link=alias_link).exists()
+                    and bool(alias_link)
+            )
+                    or
+                    (
+                            UserGroupLink.objects.filter(group=group, short_link=short_link).exists()
+                            and bool(short_link)
+                    )):
+                return Response(
+                    {'links_error': 'Ссылка уже существует в этой группе.'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            UserGroupLink.objects.create(
+                group=group,
+                alias_link=alias_link,
+                short_link=short_link
+            )
+
+            serializer_response = UserGroupWithLinksReadSerializer(
+                instance=group
+            )
+
+            return Response(
+                serializer_response.data,
+                status=status.HTTP_201_CREATED
+            )
+
+        return Response(serializer_links.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    @new_action(detail=True, methods=['delete'], url_path='remove-link', url_name='remove-link')
+    def remove_link_from_group(self, request, pk=None):
+        """Удалить ссылку из нужной группы"""
+        group = self.get_object()
+        serializer_links = UserGroupLinksWriteSerializer(
+            data=request.data,
+            context={
+                'request': request
+            }
+        )
+
+        if serializer_links.is_valid(raise_exception=True):
+            alias_link = serializer_links.validated_data.get('alias_link')
+            short_link = serializer_links.validated_data.get('short_link')
+
+            try:
+                link_to_delete = None
+
+                if alias_link:
+                    link_to_delete = UserGroupLink.objects.get(
+                        group=group,
+                        alias_link=alias_link
+                    )
+                if short_link:
+                    link_to_delete = UserGroupLink.objects.get(
+                        group=group,
+                        alias_link=alias_link
+                    )
+
+                link_to_delete.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+
+            except UserGroupLink.DoesNotExist:
+                return Response(
+                    {'links_error': 'Cсылка не добавлена в данную группу.'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+        return Response(serializer_links.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def perform_create(self, serializer):
         serializer.save(owner=self.request.user)
 
-
-# class GroupLinkViewActions(APIView):
-#     """View для получения/добавления/удаления ссылки из группы"""
-#     queryset = UserGroupLinks.objects.all()
-#     # serializer_class = UserGroupWriteSerializer
-#     permission_classes = [IsOwnerAdminOrReadOnly]
-
+    def perform_destroy(self, instance):
+        instance.delete()

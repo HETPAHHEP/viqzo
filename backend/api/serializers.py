@@ -10,28 +10,42 @@ from links.models import (AliasShortLink, ShortLink, User, UserGroup,
                           UserGroupLink)
 
 from .services.short_links import create_link, validate_alias
+from .services.usergroup import validate_links_for_group
 
 
 class ShortLinkShowSerializer(serializers.ModelSerializer):
     """Сериализатор для показа ссылок"""
+    short = serializers.CharField(source='short_url')
+    type = serializers.CharField(default='short')
+    owner = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True
+    )
 
     class Meta:
         model = ShortLink
         fields = [
-            'original_link', 'short_url', 'clicks_count',
-            'last_clicked_at', 'is_active', 'created_at'
+            'id', 'original_link', 'type',
+            'short', 'owner', 'clicks_count',
+            'last_clicked_at', 'is_active', 'created_at',
         ]
 
 
 class AliasLinkShowSerializer(serializers.ModelSerializer):
     """Сериализатор для показа ссылок"""
-    short_url = serializers.CharField(source='alias')
+    short = serializers.CharField(source='alias')
+    type = serializers.CharField(default='alias')
+    owner = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True
+    )
 
     class Meta:
         model = AliasShortLink
         fields = [
-            'original_link', 'short_url', 'clicks_count',
-            'last_clicked_at', 'is_active', 'created_at'
+            'id', 'original_link', 'type',
+            'short', 'owner', 'clicks_count',
+            'last_clicked_at', 'is_active', 'created_at',
         ]
 
 
@@ -68,6 +82,18 @@ class LinkActivationSerializer(serializers.Serializer):
     )
 
 
+class UserGroupReadSerializer(serializers.ModelSerializer):
+    """Сериализатор для просмотра группы"""
+    owner = serializers.SlugRelatedField(slug_field='username', read_only=True)
+
+    class Meta:
+        model = UserGroup
+        fields = [
+            'id', 'name', 'owner',
+            'color', 'created_at',
+        ]
+
+
 class UserGroupCreateSerializer(serializers.ModelSerializer):
     """Сериализатор для создания группы"""
 
@@ -77,9 +103,53 @@ class UserGroupCreateSerializer(serializers.ModelSerializer):
             'name',
         ]
 
+    def to_representation(self, instance):
+        return UserGroupReadSerializer(instance).data
+
+
+class UserGroupLinkSerializer(serializers.ModelSerializer):
+    """Сериализатор для представления данных о связи группы пользователя и ссылки"""
+
+    class Meta:
+        model = UserGroupLink
+        fields = ['alias_link', 'short_link']
+
+
+class UserGroupWithLinksReadSerializer(serializers.ModelSerializer):
+    """Сериализатор для просмотра группы вместе со ссылками"""
+    owner = serializers.SlugRelatedField(
+        slug_field='username',
+        read_only=True
+    )
+    links = serializers.SerializerMethodField(
+        method_name='get_all_links'
+    )
+
+    @staticmethod
+    def get_all_links(obj):
+        alias_links = []
+        short_links = []
+
+        for link in obj.group_links.all():
+            if link.alias_link:
+                alias_links.append(AliasLinkShowSerializer(link.alias_link).data)
+            if link.short_link:
+                short_links.append(ShortLinkShowSerializer(link.short_link).data)
+
+        alias_links.extend(short_links)
+
+        return alias_links
+
+    class Meta:
+        model = UserGroup
+        fields = [
+            'id', 'name', 'owner',
+            'color', 'created_at', 'links',
+        ]
+
 
 class UserGroupWriteSerializer(serializers.ModelSerializer):
-    """Сериализатор для создания группы"""
+    """Сериализатор для изменения информации о группы"""
 
     class Meta:
         model = UserGroup
@@ -87,37 +157,21 @@ class UserGroupWriteSerializer(serializers.ModelSerializer):
             'name',
         ]
 
-
-# class UserGroupsShowSerializer(serializers.ModelSerializer):
-#     """Сериализатор для показа группы"""
-#
-#     class Meta:
-#         model = UserGroup
-#         fields = [
-#             'name', 'color', 'created_at',
-#         ]
+    def to_representation(self, instance):
+        return UserGroupReadSerializer(instance).data
 
 
-class UserGroupLinkReadSerializer(serializers.ModelSerializer):
-    """Сериализатор для просмотра группы"""
-    name = serializers.ReadOnlyField(source='group.name')
-    color = serializers.ReadOnlyField(source='group.color')
-    created_at = serializers.ReadOnlyField(source='group.created_at')
+class UserGroupLinksWriteSerializer(serializers.Serializer):
+    """Сериализатор для добавления/удаления ссылки"""
+    short_link = serializers.PrimaryKeyRelatedField(
+        required=False, queryset=ShortLink.objects.all()
+    )
+    alias_link = serializers.PrimaryKeyRelatedField(
+        required=False, queryset=AliasShortLink.objects.all()
+    )
 
-    class Meta:
-        model = UserGroupLink
-        fields = [
-            'id', 'name', 'color',
-            'created_at', 'alias_link', 'short_link'
-        ]
-
-
-# class UserGroupLinkWriteSerializer(serializers.ModelSerializer):
-#     """Сериализатор для добавления ссылки в группу"""
-#     model = UserGroup
-#     fields = [
-#         'name',
-#     ]
-
+    def validate(self, attrs):
+        user = self.context['request'].user
+        return validate_links_for_group(attrs, user)
 
 

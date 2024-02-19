@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.utils import timezone
@@ -155,7 +156,7 @@ class UserGroup(models.Model):
     name = models.CharField(
         max_length=Limits.MAX_LEN_GROUP_NAME.value,
         verbose_name=_('Имя группы'),
-        unique=True,
+        # unique=True,
     )
     owner = models.ForeignKey(
         User,
@@ -200,7 +201,20 @@ class UserGroup(models.Model):
         if not self.color:
             self.color = self.set_color()
 
-        self.full_clean()  # Выполняем проверку перед сохранением
+        # self.full_clean()
+
+        try:
+            self.full_clean()  # Выполняем проверку перед сохранением
+        except ValidationError as e:
+            print(e.error_dict)
+            if '__all__' in e.error_dict:
+                raise ValidationError(
+                    {'name': _('Группа с таким именем уже существует.')},
+                    code='unique'
+                )
+                # Если другие ошибки, просто передаем исключение дальше
+            raise
+
         super().save(*args, **kwargs)
 
 
@@ -210,17 +224,23 @@ class UserGroupLink(models.Model):
         UserGroup,
         on_delete=models.CASCADE,
         verbose_name=_('Группа пользователя'),
-        related_name='group_link'
+        related_name='group_links',
     )
     alias_link = models.ForeignKey(
         AliasShortLink,
         on_delete=models.CASCADE,
         verbose_name=_('Пользовательская ссылка группы'),
+        related_name='group_links',
+        blank=True,
+        null=True,
     )
     short_link = models.ForeignKey(
         ShortLink,
         on_delete=models.CASCADE,
         verbose_name=_('Короткая ссылка группы'),
+        related_name='group_links',
+        blank=True,
+        null=True,
     )
 
     class Meta:
@@ -231,24 +251,28 @@ class UserGroupLink(models.Model):
             models.UniqueConstraint(
                 name='unique_alias_link_per_group',
                 fields=['group', 'alias_link'],
-                violation_error_message=_('Пользовательская ссылка уже в другой группе')
+                violation_error_message=_('Пользовательская ссылка уже в другой группе'),
             ),
             models.UniqueConstraint(
                 name='unique_short_link_per_group',
                 fields=['group', 'short_link'],
-                violation_error_message=_('Короткая ссылка уже в другой группе')
+                violation_error_message=_('Короткая ссылка уже в другой группе'),
             )
         ]
 
     def __str__(self):
-        return self.name
+        return self.group.name
 
     def clean(self):
         """Проверка ограничений"""
-        check_links_group_constraints(UserGroupLink)
+        check_links_group_constraints(UserGroupLink, self.group)
 
     def save(self, *args, **kwargs):
-        self.full_clean()  # Выполняем проверку перед сохранением
+        try:
+            self.full_clean()  # Выполняем проверку перед сохранением
+        except ValidationError as e:
+            raise IntegrityError(e.error_dict)
+
         super().save(*args, **kwargs)
 
 

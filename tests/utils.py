@@ -14,7 +14,7 @@ def create_short_link(client, valid_original_link) -> str:
         f'со статусом 201.'
     )
 
-    code = response.data.get('short_url')
+    code = response.data.get('short')
     if code:
         return code
 
@@ -33,18 +33,31 @@ def create_alias_link(client, original_link_with_alias) -> str:
         f'на api/links/ для создания пользовательского кода не возвращает ответ со статусом 201.'
     )
 
-    code = response.data.get('short_url')
+    code = response.data.get('short')
     if code:
         return code
 
-    raise KeyError('пользовательского код для ссылки отсутствует при создании')
+    raise KeyError('Пользовательский код для ссылки отсутствует при создании')
 
 
-def create_usergroup(client, name_for_usergroup):
+def create_usergroup(client, name_for_usergroup) -> int:
     """Создание группы для пользовательских ссылок.
 
+    :returns group_id: Id созданной группы
     """
 
     response = client.post('/api/groups/', data=name_for_usergroup)
-    assert response
+    print(response.data)
 
+    assert response.status_code == HTTPStatus.CREATED, (
+        f'POST-запрос с именем от пользователя '
+        f'на api/groups/ для создания группы не возвращает ответ '
+        f'со статусом 201.'
+    )
+
+    group_id = response.data.get('id')
+
+    if group_id:
+        return group_id
+
+    raise KeyError('Id группы отсутствует в ответе при её создании')

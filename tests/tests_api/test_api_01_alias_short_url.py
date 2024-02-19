@@ -7,7 +7,7 @@ from tests import utils
 
 @pytest.mark.django_db(transaction=True)
 class Test01AliasShort:
-
+    """Тестирование API пользовательских ссылок (с алиасом)"""
     def test_01_01_create_alias_url_not_auth(self, client, original_link_with_alias):
         response = client.post('/api/links/', data=original_link_with_alias)
         assert response.status_code == HTTPStatus.CREATED, (
@@ -78,7 +78,7 @@ class Test01AliasShort:
         assert (
                 response.status_code == HTTPStatus.OK and
                 response.data.get('original_link') == original_link_with_alias.get('original_link') and
-                response.data.get('short_url') == original_link_with_alias.get('alias')
+                response.data.get('short') == original_link_with_alias.get('alias')
         ), (
             f'GET-запрос с кодом на api/links/{code}/ для получения полной ссылки '
             f'не вернул нужную ссылку. '
@@ -90,7 +90,7 @@ class Test01AliasShort:
         assert (
                 response.status_code == HTTPStatus.OK and
                 response.data.get('original_link') == original_link_with_alias.get('original_link') and
-                response.data.get('short_url') == original_link_with_alias.get('alias') and
+                response.data.get('short') == original_link_with_alias.get('alias') and
                 response.data.get('clicks_count') == 1
         ), (
             f'GET-запрос с кодом на api/links/{code}/ для получения полной ссылки '
@@ -103,7 +103,7 @@ class Test01AliasShort:
         assert (
                 response.status_code == HTTPStatus.OK and
                 response.data.get('original_link') == original_link_with_alias.get('original_link') and
-                response.data.get('short_url') == original_link_with_alias.get('alias') and
+                response.data.get('short') == original_link_with_alias.get('alias') and
                 response.data.get('clicks_count') == 2 and
                 response.data.get('last_clicked_at') != clicked_at
         ), (
