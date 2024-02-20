@@ -11,8 +11,8 @@ from . import validators
 from .services.user_campaigns import check_campaign_group_constraints
 from .services.user_groups import (check_group_constraints,
                                    check_links_group_constraints,
+                                   full_clean_check_validation_name,
                                    set_color_for_group)
-from .validators import HexColorValidator
 
 User = get_user_model()
 
@@ -156,7 +156,6 @@ class UserGroup(models.Model):
     name = models.CharField(
         max_length=Limits.MAX_LEN_GROUP_NAME.value,
         verbose_name=_('Имя группы'),
-        # unique=True,
     )
     owner = models.ForeignKey(
         User,
@@ -166,7 +165,9 @@ class UserGroup(models.Model):
     )
     color = models.CharField(
         max_length=7,
-        validators=[HexColorValidator],
+        validators=[
+            validators.HexColorValidator
+        ],
         default='',
         verbose_name=_('Цвет'),
     )
@@ -197,23 +198,14 @@ class UserGroup(models.Model):
     def set_color(self):
         return set_color_for_group(UserGroup, self)
 
+    def try_full_clean(self):
+        return full_clean_check_validation_name(self)
+
     def save(self, *args, **kwargs):
         if not self.color:
             self.color = self.set_color()
 
-        # self.full_clean()
-
-        try:
-            self.full_clean()  # Выполняем проверку перед сохранением
-        except ValidationError as e:
-            print(e.error_dict)
-            if '__all__' in e.error_dict:
-                raise ValidationError(
-                    {'name': _('Группа с таким именем уже существует.')},
-                    code='unique'
-                )
-                # Если другие ошибки, просто передаем исключение дальше
-            raise
+        self.try_full_clean()
 
         super().save(*args, **kwargs)
 
