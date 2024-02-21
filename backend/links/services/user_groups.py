@@ -57,13 +57,14 @@ def set_color_for_group(model, instance) -> str:
 
 
 def full_clean_check_validation_name(group):
+    """Проверка ограничений имени у групп"""
     try:
         group.full_clean()  # Выполняем проверку перед сохранением
     except DjangoValidationError as e:
 
         if '__all__' in e.error_dict:
             raise ValidationError({
-                'name': _('Группа с таким именем уже существует.'),
+                'name_error': _('Группа с таким именем уже существует.'),
                 'original_error': e.error_dict,
             })
             # Если другие ошибки, просто передаем исключение дальше

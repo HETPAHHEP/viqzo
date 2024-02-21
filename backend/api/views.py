@@ -188,11 +188,19 @@ class UserGroupLinkViewSet(viewsets.ModelViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            UserGroupLink.objects.create(
-                group=group,
-                alias_link=alias_link,
-                short_link=short_link
-            )
+            if short_link:
+                group_link_add = UserGroupLink(
+                    group=group,
+                    short_link=short_link
+                )
+                group_link_add.save()
+
+            if alias_link:
+                group_link_add = UserGroupLink(
+                    group=group,
+                    alias_link=alias_link
+                )
+                group_link_add.save()
 
             serializer_response = UserGroupWithLinksReadSerializer(
                 instance=group

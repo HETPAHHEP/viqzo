@@ -13,6 +13,7 @@ from .services.user_groups import (check_group_constraints,
                                    check_links_group_constraints,
                                    full_clean_check_validation_name,
                                    set_color_for_group)
+from .services.user_groups_links import full_clean_check_validation_name
 
 User = get_user_model()
 
@@ -196,9 +197,11 @@ class UserGroup(models.Model):
         check_group_constraints(UserGroup, self.owner)
 
     def set_color(self):
+        """Поставить цвет группе"""
         return set_color_for_group(UserGroup, self)
 
     def try_full_clean(self):
+        """Запустить проверку полей модели"""
         return full_clean_check_validation_name(self)
 
     def save(self, *args, **kwargs):
@@ -214,12 +217,14 @@ class UserGroupLink(models.Model):
     """Ссылки в группе пользователя"""
     group = models.ForeignKey(
         UserGroup,
+        db_column='group',
         on_delete=models.CASCADE,
         verbose_name=_('Группа пользователя'),
         related_name='group_links',
     )
     alias_link = models.ForeignKey(
         AliasShortLink,
+        db_column='alias_link',
         on_delete=models.CASCADE,
         verbose_name=_('Пользовательская ссылка группы'),
         related_name='group_links',
@@ -228,6 +233,7 @@ class UserGroupLink(models.Model):
     )
     short_link = models.ForeignKey(
         ShortLink,
+        db_column='short_link',
         on_delete=models.CASCADE,
         verbose_name=_('Короткая ссылка группы'),
         related_name='group_links',
@@ -243,12 +249,12 @@ class UserGroupLink(models.Model):
             models.UniqueConstraint(
                 name='unique_alias_link_per_group',
                 fields=['group', 'alias_link'],
-                violation_error_message=_('Пользовательская ссылка уже в другой группе'),
+                condition=models.Q(alias_link__isnull=False),
             ),
             models.UniqueConstraint(
                 name='unique_short_link_per_group',
                 fields=['group', 'short_link'],
-                violation_error_message=_('Короткая ссылка уже в другой группе'),
+                condition=models.Q(short_link__isnull=False),
             )
         ]
 
@@ -259,11 +265,12 @@ class UserGroupLink(models.Model):
         """Проверка ограничений"""
         check_links_group_constraints(UserGroupLink, self.group)
 
+    def try_full_clean(self):
+        """Запустить проверку полей модели"""
+        return full_clean_check_validation_name(self)
+
     def save(self, *args, **kwargs):
-        try:
-            self.full_clean()  # Выполняем проверку перед сохранением
-        except ValidationError as e:
-            raise IntegrityError(e.error_dict)
+        self.try_full_clean()
 
         super().save(*args, **kwargs)
 
