@@ -1,6 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
-from django.core.validators import MinValueValidator
+from django.core.validators import MinLengthValidator, MaxLengthValidator
 from django.db import models
 from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
@@ -8,148 +8,13 @@ from django.utils.translation import gettext_lazy as _
 from core.enums import Limits
 
 from . import validators
+from .services.short_links import check_links_group_constraints
 from .services.user_campaigns import check_campaign_group_constraints
 from .services.user_groups import (check_group_constraints,
-                                   check_links_group_constraints,
                                    full_clean_check_validation_name,
                                    set_color_for_group)
-from .services.user_groups_links import full_clean_check_validation_name
 
 User = get_user_model()
-
-
-class BaseShortLink(models.Model):
-    """Базовая модель для коротких ссылок"""
-    original_link = models.URLField(
-        unique=True,
-        max_length=Limits.MAX_LEN_ORIGINAL_LINK.value,
-        verbose_name=_('Оригинальная ссылка'),
-    )
-    created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name=_('Дата создания')
-    )
-    clicks_count = models.PositiveIntegerField(
-        default=0,
-        verbose_name=_('Переходов по ссылке')
-    )
-    last_clicked_at = models.DateTimeField(
-        null=True,
-        blank=True,
-        verbose_name=_('Последнее время клика')
-    )
-    is_active = models.BooleanField(
-        default=True,
-        verbose_name=_('Активна ли ссылка?')
-    )
-
-    def save(self, *args, **kwargs):
-        if self.pk:
-            if self.clicks_count == 0:
-                # Кликов ещё не было
-                self.last_clicked_at = None
-            else:
-                # Обновляем время последнего клика при переходе
-                self.last_clicked_at = timezone.now()
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.original_link
-
-    class Meta:
-        abstract = True
-
-
-class ShortLink(BaseShortLink):
-    """Модель для основных коротких ссылок"""
-    short_url = models.CharField(
-        max_length=Limits.MAX_LEN_LINK_SHORT_CODE.value,
-        unique=True,
-        blank=True,
-        db_index=True,
-        verbose_name=_('Короткий код ссылки'),
-        validators=[
-            validators.ShortURLValidator,
-            MinValueValidator(
-                limit_value=Limits.MAX_LEN_LINK_SHORT_CODE.value
-            )
-        ]
-    )
-    owner = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        verbose_name=_('Владелец короткой ссылки'),
-        related_name='short_owner',
-        blank=True,
-        null=True,
-    )
-
-    class Meta:
-        verbose_name = _('Короткая ссылка')
-        verbose_name_plural = _('Короткие ссылки')
-        db_table = 'links_short_link'
-        constraints = [
-            models.UniqueConstraint(
-                name='unique_link_shortcode',
-                fields=['original_link', 'short_url'],
-            )
-        ]
-        ordering = [
-            'original_link', 'short_url', 'created_at',
-            'clicks_count', 'last_clicked_at', 'is_active',
-            'owner'
-        ]
-
-    def __str__(self):
-        return self.short_url
-
-
-class AliasShortLink(BaseShortLink):
-    """Модель для основных коротких ссылок"""
-    original_link = models.URLField(
-        max_length=Limits.MAX_LEN_ORIGINAL_LINK.value,
-        verbose_name=_('Оригинальная ссылка'),
-    )
-    alias = models.CharField(
-        max_length=Limits.MAX_LEN_ALIAS_CODE.value,
-        unique=True,
-        blank=True,
-        db_index=True,
-        verbose_name=_('Пользовательское имя ссылки'),
-        validators=[
-            validators.AliasShortURLValidator,
-            MinValueValidator(
-                limit_value=Limits.MIN_LEN_ALIAS_CODE.value
-            )
-        ]
-    )
-    owner = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        verbose_name=_('Владелец пользовательской ссылки'),
-        related_name='alias_owner',
-        blank=True,
-        null=True,
-    )
-
-    class Meta:
-        verbose_name = _('Пользовательская ссылка')
-        verbose_name_plural = _('Пользовательские ссылки')
-        db_table = 'links_alias_link'
-        constraints = [
-            models.UniqueConstraint(
-                name='unique_alias_link',
-                fields=['original_link', 'alias'],
-            )
-        ]
-        ordering = [
-            'original_link', 'alias', 'created_at',
-            'clicks_count', 'last_clicked_at', 'is_active',
-            'owner'
-        ]
-
-    def __str__(self):
-        return self.alias
 
 
 class UserGroup(models.Model):
@@ -213,66 +78,243 @@ class UserGroup(models.Model):
         super().save(*args, **kwargs)
 
 
-class UserGroupLink(models.Model):
-    """Ссылки в группе пользователя"""
+class BaseShortLink(models.Model):
+    """Базовая модель для коротких ссылок"""
+    original_link = models.URLField(
+        unique=True,
+        max_length=Limits.MAX_LEN_ORIGINAL_LINK.value,
+        verbose_name=_('Оригинальная ссылка'),
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name=_('Дата создания')
+    )
+    clicks_count = models.PositiveIntegerField(
+        default=0,
+        verbose_name=_('Переходов по ссылке')
+    )
+    last_clicked_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        verbose_name=_('Последнее время клика')
+    )
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name=_('Активна ли ссылка?')
+    )
+
+    def save(self, *args, **kwargs):
+
+        if 'clean' in dir(self):
+            self.full_clean()
+
+        if self.pk:
+            if self.clicks_count == 0:
+                # Кликов ещё не было
+                self.last_clicked_at = None
+            else:
+                # Обновляем время последнего клика при переходе
+                self.last_clicked_at = timezone.now()
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return self.original_link
+
+    class Meta:
+        abstract = True
+
+
+class ShortLink(BaseShortLink):
+    """Модель для основных коротких ссылок"""
+    short_url = models.CharField(
+        max_length=Limits.MAX_LEN_LINK_SHORT_CODE.value,
+        unique=True,
+        blank=True,
+        db_index=True,
+        verbose_name=_('Короткий код ссылки'),
+        validators=[
+            validators.ShortURLValidator,
+            MinLengthValidator(
+                limit_value=Limits.MAX_LEN_LINK_SHORT_CODE.value
+            ),
+            MaxLengthValidator(
+                limit_value=Limits.MAX_LEN_LINK_SHORT_CODE.value
+            )
+        ]
+    )
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name=_('Владелец короткой ссылки'),
+        related_name='short_owner',
+        blank=True,
+        null=True,
+    )
     group = models.ForeignKey(
         UserGroup,
         db_column='group',
         on_delete=models.CASCADE,
         verbose_name=_('Группа пользователя'),
-        related_name='group_links',
-    )
-    alias_link = models.ForeignKey(
-        AliasShortLink,
-        db_column='alias_link',
-        on_delete=models.CASCADE,
-        verbose_name=_('Пользовательская ссылка группы'),
-        related_name='group_links',
-        blank=True,
-        null=True,
-    )
-    short_link = models.ForeignKey(
-        ShortLink,
-        db_column='short_link',
-        on_delete=models.CASCADE,
-        verbose_name=_('Короткая ссылка группы'),
-        related_name='group_links',
+        related_name='short_group_links',
         blank=True,
         null=True,
     )
 
     class Meta:
-        verbose_name = _('Группа ссылок')
-        verbose_name_plural = _('Группы ссылок')
-        db_table = 'links_user_group_with_links'
+        verbose_name = _('Короткая ссылка')
+        verbose_name_plural = _('Короткие ссылки')
+        db_table = 'links_short_link'
         constraints = [
             models.UniqueConstraint(
-                name='unique_alias_link_per_group',
-                fields=['group', 'alias_link'],
-                condition=models.Q(alias_link__isnull=False),
+                name='unique_link_shortcode',
+                fields=['original_link', 'short_url'],
             ),
             models.UniqueConstraint(
                 name='unique_short_link_per_group',
-                fields=['group', 'short_link'],
-                condition=models.Q(short_link__isnull=False),
-            )
+                fields=['group', 'id'],
+            ),
+        ]
+        ordering = [
+            'original_link', 'short_url', 'created_at',
+            'clicks_count', 'last_clicked_at', 'is_active',
+            'owner', 'group',
         ]
 
+    def clean(self):
+        """Проверка ограничений ссылки"""
+        check_links_group_constraints(self.group)
+
     def __str__(self):
-        return self.group.name
+        return self.short_url
+
+
+class AliasShortLink(BaseShortLink):
+    """Модель для основных коротких ссылок"""
+    original_link = models.URLField(
+        max_length=Limits.MAX_LEN_ORIGINAL_LINK.value,
+        verbose_name=_('Оригинальная ссылка'),
+    )
+    alias = models.CharField(
+        max_length=Limits.MAX_LEN_ALIAS_CODE.value,
+        unique=True,
+        blank=True,
+        db_index=True,
+        verbose_name=_('Пользовательское имя ссылки'),
+        validators=[
+            validators.AliasShortURLValidator,
+            MinLengthValidator(
+                limit_value=Limits.MIN_LEN_ALIAS_CODE.value
+            ),
+            MaxLengthValidator(
+                limit_value=Limits.MAX_LEN_ALIAS_CODE.value
+            )
+        ]
+    )
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name=_('Владелец пользовательской ссылки'),
+        related_name='alias_owner',
+        blank=True,
+        null=True,
+    )
+    group = models.ForeignKey(
+        UserGroup,
+        db_column='group',
+        on_delete=models.CASCADE,
+        verbose_name=_('Группа пользователя'),
+        related_name='alias_group_links',
+        blank=True,
+        null=True,
+    )
+
+    class Meta:
+        verbose_name = _('Пользовательская ссылка')
+        verbose_name_plural = _('Пользовательские ссылки')
+        db_table = 'links_alias_link'
+        constraints = [
+            models.UniqueConstraint(
+                name='unique_alias_link',
+                fields=['original_link', 'alias'],
+            ),
+            models.UniqueConstraint(
+                name='unique_alias_link_per_group',
+                fields=['group', 'id'],
+            ),
+        ]
+        ordering = [
+            'original_link', 'alias', 'created_at',
+            'clicks_count', 'last_clicked_at', 'is_active',
+            'owner', 'group',
+        ]
 
     def clean(self):
-        """Проверка ограничений"""
-        check_links_group_constraints(UserGroupLink, self.group)
+        """Проверка ограничений ссылки"""
+        check_links_group_constraints(self.group)
 
-    def try_full_clean(self):
-        """Запустить проверку полей модели"""
-        return full_clean_check_validation_name(self)
+    def __str__(self):
+        return self.alias
 
-    def save(self, *args, **kwargs):
-        self.try_full_clean()
-
-        super().save(*args, **kwargs)
+# class UserGroupLink(models.Model):
+#     """Ссылки в группе пользователя"""
+#     group = models.ForeignKey(
+#         UserGroup,
+#         db_column='group',
+#         on_delete=models.CASCADE,
+#         verbose_name=_('Группа пользователя'),
+#         related_name='group_links',
+#     )
+#     alias_link = models.ForeignKey(
+#         AliasShortLink,
+#         db_column='alias_link',
+#         on_delete=models.CASCADE,
+#         verbose_name=_('Пользовательская ссылка группы'),
+#         related_name='group_links',
+#         blank=True,
+#         null=True,
+#     )
+#     short_link = models.ForeignKey(
+#         ShortLink,
+#         db_column='short_link',
+#         on_delete=models.CASCADE,
+#         verbose_name=_('Короткая ссылка группы'),
+#         related_name='group_links',
+#         blank=True,
+#         null=True,
+#     )
+#
+#     class Meta:
+#         verbose_name = _('Группа ссылок')
+#         verbose_name_plural = _('Группы ссылок')
+#         db_table = 'links_user_group_with_links'
+#         constraints = [
+#             models.UniqueConstraint(
+#                 name='unique_alias_link_per_group',
+#                 fields=['group', 'alias_link'],
+#                 condition=models.Q(alias_link__isnull=False),
+#             ),
+#             models.UniqueConstraint(
+#                 name='unique_short_link_per_group',
+#                 fields=['group', 'short_link'],
+#                 condition=models.Q(short_link__isnull=False),
+#             )
+#         ]
+#
+#     def __str__(self):
+#         return self.group.name
+#
+#     def clean(self):
+#         """Проверка ограничений"""
+#         check_links_group_constraints(UserGroupLink, self.group)
+#
+#     def try_full_clean(self):
+#         """Запустить проверку полей модели"""
+#         return full_clean_check_validation_name(self)
+#
+#     def save(self, *args, **kwargs):
+#         self.try_full_clean()
+#
+#         super().save(*args, **kwargs)
 
 
 # КАМПАНИИ ДЛЯ ГРУПП. ПОКА НЕ РЕАЛИЗОВАНЫ ИЗ-ЗА СОМНЕНИЯ В НЕОБХОДИМОСТИ

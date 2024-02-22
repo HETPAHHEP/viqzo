@@ -24,7 +24,7 @@ def validate_links_for_group(data, user):
         if short_link.owner != user:
             raise ValidationError({
                 'links_error': _(
-                    "Нельзя добавить 'short_link' ссылку в группу, так как Вы не являетесь владельцем ссылки."
+                    "Нельзя добавить 'short_link' ссылку в группу, так как Вы не являетесь её владельцем."
                 )
             })
 
@@ -32,7 +32,7 @@ def validate_links_for_group(data, user):
         if alias_link.owner != user:
             raise ValidationError({
                 'links_error': _(
-                    "Нельзя добавить 'alias_link' ссылку в группу, так как Вы не являетесь владельцем ссылки."
+                    "Нельзя добавить 'alias_link' ссылку в группу, так как Вы не являетесь её владельцем"
                 )
             })
 

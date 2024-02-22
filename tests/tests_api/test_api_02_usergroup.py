@@ -230,12 +230,17 @@ class Test02UserGroup:
             f'(пользователь должен получить только список своих групп).'
         )
 
-    def test_06_01_add_short_link_to_group(self, user_client, name_for_usergroup, valid_original_link):
+    def test_06_01_create_and_add_short_link_to_group(self, user_client, name_for_usergroup, valid_original_link):
         group_id = utils.create_usergroup(user_client, name_for_usergroup)
-        link = utils.create_short_link_and_return_id_in_dict(user_client, valid_original_link)
+        link_with_group = valid_original_link.update(
+            {
+                'group': group_id
+            }
+        )
 
-        response = user_client.post(f'/api/groups/{group_id}/add-link/', data=link)
-        assert response.status_code == HTTPStatus.CREATED, (
+        response = user_client.post(f'/api/links/', data=link_with_group)
+        assert (response.status_code == HTTPStatus.CREATED
+                and response.group == group_id), (
             f'POST-запрос от авторизованного пользователя '
             f'на /api/groups/group_id/add-link/ для добавления short ссылки в группу '
             f'не возвращает ответ со статусом 201 '

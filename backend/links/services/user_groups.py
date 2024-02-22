@@ -9,18 +9,6 @@ from core.enums import Limits
 from .colors import colors_palette
 
 
-def check_links_group_constraints(model, group):
-    """Проверка ограничений ссылок в группе"""
-    links_count = model.objects.filter(group=group).count()
-
-    if links_count >= Limits.MAX_LINKS_GROUP_AMOUNT:
-        raise ValidationError({
-            'links_error': _(
-                'Превышено максимальное количество ссылок для этой группы.'
-            )
-        })
-
-
 def check_group_constraints(model, user):
     """Проверка ограничений группы"""
     groups_count = model.objects.filter(owner=user).count()

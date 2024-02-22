@@ -15,12 +15,18 @@ def create_link(
     """Создание сокращенной ссылки для оригинальной"""
     original_link = valid_data.get('original_link')
     alias = valid_data.get('alias')
+    group = valid_data.get('group')
 
     if alias:
         url = AliasShortLink.objects.create(
             original_link=original_link,
             alias=alias,
         )
+
+        if group:
+            url.group = group
+            url.save()
+
         created = True
 
     else:
@@ -37,7 +43,10 @@ def create_link(
                 url.short_url = short_code
                 url.save()
 
-    if user:
+    if created and user:
+        if group:
+            url.group = group
+
         url.owner = user
         url.save()
 
@@ -52,6 +61,21 @@ def validate_alias(data):
         if AliasShortLink.objects.filter(alias=alias).exists():
             raise ValidationError({
                 'alias_error': _('Данный код для ссылки уже занят.')
+            })
+
+    return data
+
+
+def validate_group_for_link(data, user):
+    """Проверка условий для изменения ссылки"""
+    group = data.get('group')
+
+    if group:
+        if group.owner != user:
+            raise ValidationError({
+                'group_error': _(
+                    "Нельзя добавить ссылку в группу, так как Вы не являетесь её владельцем."
+                )
             })
 
     return data
