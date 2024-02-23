@@ -21,13 +21,11 @@ def check_group_constraints(model, user):
         })
 
 
-def set_color_for_group(model, instance) -> str:
+def set_color_for_group(instance) -> str:
     """Добавление цвета к группе"""
 
     # Получаем список цветов, которые уже используются
-    # used_colors = UserGroup.objects.exclude(
-    # pk=instance.pk).values_list('color', flat=True)
-    used_colors = model.objects.exclude(
+    used_colors = instance.objects.exclude(
         pk=instance.pk).values_list('color', flat=True)
 
     # Получаем список доступных цветов, которые еще не использованы

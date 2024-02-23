@@ -6,7 +6,7 @@ from core.enums import Limits
 
 class ShortURLValidator(RegexValidator):
     """Валидатор короткого кода ссылки"""
-    max_val = Limits.MAX_LEN_LINK_SHORT_CODE.value
+    max_val = Limits.MAX_LEN_LINK_SHORT_CODE
 
     regex = fr'^[a-zA-Z0-9]{max_val}$'
     message = _('Короткий код ссылки недействителен.')
@@ -15,8 +15,8 @@ class ShortURLValidator(RegexValidator):
 
 class AliasShortURLValidator(RegexValidator):
     """Валидатор пользовательского короткого кода ссылки"""
-    min_val = Limits.MIN_LEN_ALIAS_CODE.value
-    max_val = Limits.MAX_LEN_ALIAS_CODE.value
+    min_val = Limits.MIN_LEN_ALIAS_CODE
+    max_val = Limits.MAX_LEN_ALIAS_CODE
 
     regex = fr'^[a-zA-Z0-9]{min_val, max_val}$'
     message = _('Пользовательский код ссылки недействителен.')

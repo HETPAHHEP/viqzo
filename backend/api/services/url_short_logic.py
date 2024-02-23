@@ -18,7 +18,7 @@ class LinkHash:
         self.alphabet = \
             '0GTWYahl4C1Dq2evKiNPJdwfLxAsH9t8E5Z3RISyUuzQVk7rjFn6mpgbBXOcoM'
         self.base_len = len(self.alphabet)
-        self.code_fix_len = Limits.MAX_LEN_LINK_SHORT_CODE
+        self.code_fix_len = Limits.BASIC_LEN_SHORT_CODE
 
     @staticmethod
     def _get_id_for_link() -> int:

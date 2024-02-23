@@ -11,46 +11,43 @@ User = get_user_model()
 
 def create_link(
         valid_data: dict,
-        user: User | None = None) -> tuple[ShortLink | AliasShortLink, bool]:
+        user: User | None = None) -> tuple[ShortLink, bool]:
     """Создание сокращенной ссылки для оригинальной"""
     original_link = valid_data.get('original_link')
     alias = valid_data.get('alias')
     group = valid_data.get('group')
 
     if alias:
-        url = AliasShortLink.objects.create(
+        link = ShortLink(
             original_link=original_link,
-            alias=alias,
+            short=alias,
         )
 
-        if group:
-            url.group = group
-            url.save()
-
+        link.save()
         created = True
 
     else:
-        url, created = ShortLink.objects.get_or_create(
+        link, created = ShortLink.get_or_create(
             original_link=original_link
         )
 
     if created and not alias:
-        while not url.short_url:
+        while not link.short:
             # проверяем, не занят ли короткий код и присваиваем его ссылке
             short_code = LinkHash().get_short_code()
 
-            if not ShortLink.objects.filter(short_url=short_code).exists():
-                url.short_url = short_code
-                url.save()
+            if not ShortLink.objects.filter(short=short_code).exists():
+                link.short_url = short_code
+                link.save()
 
     if created and user:
         if group:
-            url.group = group
+            link.group = group
 
-        url.owner = user
-        url.save()
+        link.owner = user
+        link.save()
 
-    return url, created
+    return link, created
 
 
 def validate_alias(data):
@@ -58,7 +55,7 @@ def validate_alias(data):
 
     if alias:
 
-        if AliasShortLink.objects.filter(alias=alias).exists():
+        if ShortLink.objects.filter(short=alias).exists():
             raise ValidationError({
                 'alias_error': _('Данный код для ссылки уже занят.')
             })

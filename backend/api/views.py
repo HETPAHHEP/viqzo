@@ -7,31 +7,90 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.generics import GenericAPIView
 
-from links.models import AliasShortLink, ShortLink, UserGroup
+from links.models import ShortLink, UserGroup
 
 from .permissons import IsOwnerAdminOrReadOnly, IsOwnerOrAdmin
-from .serializers import (AliasLinkShowSerializer, LinkEditSerializer,
-                          LinkWriteSerializer, ShortLinkShowSerializer,
+from .serializers import (AliasLinkShowSerializer, ShortLinkEditSerializer,
+                          ShortLinkWriteSerializer, ShortLinkReadSerializer,
                           UserGroupReadSerializer, UserGroupWriteSerializer)
 from .paginators import LinksPagination
 
 
+class ShortLinkView(viewsets.ModelViewSet):
+    """ViewSet для действий с короткой ссылкой
+    (создание, изменение, получение всех ссылок и оригинальной ссылки)
+    """
+    lookup_field = 'short'
+
+    def get_permissions(self):
+        """Выдача разрешения в зависимости от действия"""
+        permissions = []  # noqa
+
+        if self.action == 'list':
+            permissions = [IsAuthenticated]
+        if self.action in ('update', 'partial_update', 'destroy'):
+            permissions = [IsOwnerOrAdmin]
+        return [permission() for permission in permissions]
+
+    def get_queryset(self):
+        """Выдача queryset к действию"""
+        if self.action in ('list', 'update', 'partial_update', 'destroy'):
+            if not self.request.user.is_staff:
+                return ShortLink.objects.filter(owner=self.request.user)
+        return ShortLink.objects.all()
+
+    def get_serializer_class(self):
+        """Выдача сериализатор к действию"""
+        if self.action == 'create':
+            return ShortLinkWriteSerializer
+        if self.action in ('update', 'partial_update'):
+            return ShortLinkEditSerializer
+        if self.action in ('list', 'retrieve'):
+            return ShortLinkReadSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        instance, created_status = self.perform_create(serializer)
+
+        if created_status:
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    def perform_create(self, serializer) -> tuple[ShortLink, bool]:
+        """Создаем ссылку и возвращаем её вместе со статусом создания"""
+        instance, created_status = serializer.save()
+        return instance, created_status
+
+    def retrieve(self, request, *args, **kwargs):
+        link = self.get_object()
+
+        link.clicks_count += 1
+        link.save()
+
+        serializer = self.get_serializer(link)
+        return Response(serializer.data)
+
+
 class BaseShortLinkView(APIView):
     """Базовый View для короткой ссылки"""
-    serializer_short = ShortLinkShowSerializer
+    serializer_short = ShortLinkReadSerializer
     serializer_alias = AliasLinkShowSerializer
 
     @staticmethod
     def get_serializer(instance):
         """Для коротких и пользовательских ссылок"""
         if isinstance(instance, ShortLink):
-            return ShortLinkShowSerializer
+            return ShortLinkReadSerializer
         return AliasLinkShowSerializer
 
 
 class CreateShortLinkOrGetLinksView(BaseShortLinkView, GenericAPIView):
     """View для создания (или получения) короткой ссылки"""
-    serializer_create = LinkWriteSerializer
+    serializer_create = ShortLinkWriteSerializer
     pagination_class = LinksPagination
 
     @permission_classes([IsAuthenticated])
@@ -78,7 +137,7 @@ class CreateShortLinkOrGetLinksView(BaseShortLinkView, GenericAPIView):
 
 class LinkActionsView(BaseShortLinkView):
     """View для получения или изменения статуса короткой ссылки"""
-    serializer_edit = LinkEditSerializer
+    serializer_edit = ShortLinkEditSerializer
     permission_classes = [IsOwnerAdminOrReadOnly]
 
     def get(self, request, short_url) -> Response:
@@ -188,7 +247,7 @@ class LinkActionsView(BaseShortLinkView):
 
 
 class UserGroupLinkViewSet(viewsets.ModelViewSet):
-    """Viewset для получения/добавления/удаления ссылки из группы,
+    """ViewSet для получения/добавления/удаления ссылки из группы,
     а также изменения информации о группе.
     """
     actions_without_create = [

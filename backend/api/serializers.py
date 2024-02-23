@@ -37,10 +37,9 @@ class UserGroupWriteSerializer(serializers.ModelSerializer):
         return UserGroupReadSerializer(instance).data
 
 
-class ShortLinkShowSerializer(serializers.ModelSerializer):
+class ShortLinkReadSerializer(serializers.ModelSerializer):
     """Сериализатор для показа ссылок"""
     short = serializers.CharField(source='short_url')
-    type = serializers.CharField(default='short', read_only=True)
     owner = serializers.SlugRelatedField(
         slug_field='username',
         read_only=True
@@ -57,34 +56,14 @@ class ShortLinkShowSerializer(serializers.ModelSerializer):
         ]
 
 
-class AliasLinkShowSerializer(serializers.ModelSerializer):
-    """Сериализатор для показа ссылок"""
-    short = serializers.CharField(source='alias')
-    type = serializers.CharField(default='alias', read_only=True)
-    owner = serializers.SlugRelatedField(
-        slug_field='username',
-        read_only=True
-    )
-    group = UserGroupReadSerializer(read_only=True)
-
-    class Meta:
-        model = AliasShortLink
-        fields = [
-            'id', 'original_link', 'type',
-            'short', 'owner', 'clicks_count',
-            'last_clicked_at', 'is_active', 'created_at',
-            'group',
-        ]
-
-
-class LinkWriteSerializer(serializers.Serializer):
+class ShortLinkWriteSerializer(serializers.Serializer):
     """Сериализатор для записи ссылок"""
     original_link = serializers.URLField(
-        max_length=Limits.MAX_LEN_ORIGINAL_LINK.value
+        max_length=Limits.MAX_LEN_ORIGINAL_LINK
     )
     alias = serializers.CharField(
-        max_length=Limits.MAX_LEN_ALIAS_CODE.value,
-        min_length=Limits.MIN_LEN_ALIAS_CODE.value,
+        max_length=Limits.MAX_LEN_ALIAS_CODE,
+        min_length=Limits.MIN_LEN_ALIAS_CODE,
         validators=[validators.AliasShortURLValidator],
         required=False
     )
@@ -100,7 +79,7 @@ class LinkWriteSerializer(serializers.Serializer):
         return validate_group_for_link(data_valid_alias, user)
 
     @atomic
-    def create(self, valid_data) -> tuple[ShortLink | AliasShortLink, bool]:
+    def create(self, valid_data) -> tuple[ShortLink, bool]:
         """Создание сокращенной ссылки для оригинальной"""
         user = self.context.get('user')
 
@@ -108,8 +87,12 @@ class LinkWriteSerializer(serializers.Serializer):
             return create_link(valid_data, user)
         return create_link(valid_data)
 
+    def to_representation(self, instance_and_status):
+        instance, created_status = instance_and_status
+        return UserGroupReadSerializer(instance).data
 
-class LinkEditSerializer(serializers.Serializer):
+
+class ShortLinkEditSerializer(serializers.Serializer):
     """Сериализатор для активации/деактивации"""
     is_active = serializers.BooleanField(
         help_text=_('Активна ли ссылка?')
@@ -121,3 +104,23 @@ class LinkEditSerializer(serializers.Serializer):
     def validate(self, attrs):
         user = self.context.get('request').user
         return validate_group_for_link(attrs, user)
+
+
+# class AliasLinkShowSerializer(serializers.ModelSerializer):
+#     """Сериализатор для показа ссылок"""
+#     short = serializers.CharField(source='alias')
+#     type = serializers.CharField(default='alias', read_only=True)
+#     owner = serializers.SlugRelatedField(
+#         slug_field='username',
+#         read_only=True
+#     )
+#     group = UserGroupReadSerializer(read_only=True)
+#
+#     class Meta:
+#         model = AliasShortLink
+#         fields = [
+#             'id', 'original_link', 'type',
+#             'short', 'owner', 'clicks_count',
+#             'last_clicked_at', 'is_active', 'created_at',
+#             'group',
+#         ]
