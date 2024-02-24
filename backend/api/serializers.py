@@ -6,10 +6,9 @@ from rest_framework import serializers
 
 from core.enums import Limits
 from links import validators
-from links.models import AliasShortLink, ShortLink, User, UserGroup
+from links.models import ShortLink, UserGroup
 
-from .services.short_links import (create_link, validate_alias,
-                                   validate_group_for_link)
+from .services.short_links import validate_alias, validate_group_for_link
 
 
 class UserGroupReadSerializer(serializers.ModelSerializer):
@@ -32,6 +31,7 @@ class UserGroupWriteSerializer(serializers.ModelSerializer):
         fields = [
             'name',
         ]
+        write_only = True
 
     def to_representation(self, instance):
         return UserGroupReadSerializer(instance).data
@@ -39,7 +39,6 @@ class UserGroupWriteSerializer(serializers.ModelSerializer):
 
 class ShortLinkReadSerializer(serializers.ModelSerializer):
     """Сериализатор для показа ссылок"""
-    short = serializers.CharField(source='short_url')
     owner = serializers.SlugRelatedField(
         slug_field='username',
         read_only=True
@@ -49,47 +48,40 @@ class ShortLinkReadSerializer(serializers.ModelSerializer):
     class Meta:
         model = ShortLink
         fields = [
-            'id', 'original_link', 'type',
+            'id', 'original_link',
             'short', 'owner', 'clicks_count',
             'last_clicked_at', 'is_active', 'created_at',
             'group'
         ]
+        read_only = True
 
 
-class ShortLinkWriteSerializer(serializers.Serializer):
+class ShortLinkWriteSerializer(serializers.ModelSerializer):
     """Сериализатор для записи ссылок"""
-    original_link = serializers.URLField(
-        max_length=Limits.MAX_LEN_ORIGINAL_LINK
-    )
     alias = serializers.CharField(
-        max_length=Limits.MAX_LEN_ALIAS_CODE,
-        min_length=Limits.MIN_LEN_ALIAS_CODE,
-        validators=[validators.AliasShortURLValidator],
+        source='short',
+        max_length=Limits.MAX_LEN_LINK_SHORT_CODE,
+        min_length=Limits.MIN_LEN_LINK_SHORT_CODE,
+        validators=[validators.AliasCodeValidator],
         required=False
-    )
-    group = serializers.PrimaryKeyRelatedField(
-        required=False, queryset=UserGroup.objects.all()
     )
 
     def validate(self, data: OrderedDict) -> OrderedDict:
         """Валидация данных"""
-        user = self.context.get('user')
+        user = self.context.get('request').user
 
         data_valid_alias = validate_alias(data)
         return validate_group_for_link(data_valid_alias, user)
 
-    @atomic
-    def create(self, valid_data) -> tuple[ShortLink, bool]:
-        """Создание сокращенной ссылки для оригинальной"""
-        user = self.context.get('user')
+    def to_representation(self, instance):
+        return ShortLinkReadSerializer(instance).data
 
-        if user.is_authenticated:
-            return create_link(valid_data, user)
-        return create_link(valid_data)
-
-    def to_representation(self, instance_and_status):
-        instance, created_status = instance_and_status
-        return UserGroupReadSerializer(instance).data
+    class Meta:
+        model = ShortLink
+        fields = [
+            'original_link', 'alias', 'group'
+        ]
+        write_only = True
 
 
 class ShortLinkEditSerializer(serializers.Serializer):
@@ -104,23 +96,3 @@ class ShortLinkEditSerializer(serializers.Serializer):
     def validate(self, attrs):
         user = self.context.get('request').user
         return validate_group_for_link(attrs, user)
-
-
-# class AliasLinkShowSerializer(serializers.ModelSerializer):
-#     """Сериализатор для показа ссылок"""
-#     short = serializers.CharField(source='alias')
-#     type = serializers.CharField(default='alias', read_only=True)
-#     owner = serializers.SlugRelatedField(
-#         slug_field='username',
-#         read_only=True
-#     )
-#     group = UserGroupReadSerializer(read_only=True)
-#
-#     class Meta:
-#         model = AliasShortLink
-#         fields = [
-#             'id', 'original_link', 'type',
-#             'short', 'owner', 'clicks_count',
-#             'last_clicked_at', 'is_active', 'created_at',
-#             'group',
-#         ]

@@ -4,7 +4,7 @@ from django.utils.translation import gettext_lazy as _
 from core.enums import Limits
 
 
-class ShortURLValidator(RegexValidator):
+class ShortCodeValidator(RegexValidator):
     """Валидатор короткого кода ссылки"""
     max_val = Limits.MAX_LEN_LINK_SHORT_CODE
 
@@ -13,10 +13,10 @@ class ShortURLValidator(RegexValidator):
     code = 'short_url_error'
 
 
-class AliasShortURLValidator(RegexValidator):
+class AliasCodeValidator(RegexValidator):
     """Валидатор пользовательского короткого кода ссылки"""
-    min_val = Limits.MIN_LEN_ALIAS_CODE
-    max_val = Limits.MAX_LEN_ALIAS_CODE
+    min_val = Limits.MIN_LEN_LINK_SHORT_CODE
+    max_val = Limits.MAX_LEN_LINK_SHORT_CODE
 
     regex = fr'^[a-zA-Z0-9]{min_val, max_val}$'
     message = _('Пользовательский код ссылки недействителен.')

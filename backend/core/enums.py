@@ -4,12 +4,12 @@ from enum import IntEnum
 class Limits(IntEnum):
     # Код для короткой ссылки
     MIN_LEN_LINK_SHORT_CODE = 4
-    # Длина оригинальной ссылки
-    MAX_LEN_ORIGINAL_LINK = 2000
     # Максимальная длина короткой ссылки
     MAX_LEN_LINK_SHORT_CODE = 30
     # Обычная длина сгенерированного короткого кода ссылки
     BASIC_LEN_SHORT_CODE = 7
+    # Длина оригинальной ссылки
+    MAX_LEN_ORIGINAL_LINK = 2000
     # Максимальная длинна названия группы
     MAX_LEN_GROUP_NAME = 30
     # Максимальное количество коротких ссылок в группе
