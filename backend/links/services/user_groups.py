@@ -55,4 +55,3 @@ def full_clean_check_validation_name(group):
             })
             # Если другие ошибки, просто передаем исключение дальше
         raise
-

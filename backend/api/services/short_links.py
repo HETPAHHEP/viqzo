@@ -25,7 +25,8 @@ def validate_group_for_link(data, user):
         if group.owner != user:
             raise ValidationError({
                 'group_error': _(
-                    "Нельзя добавить ссылку в группу, так как Вы не являетесь её владельцем."
+                    "Нельзя добавить ссылку в группу, "
+                    "так как Вы не являетесь её владельцем."
                 )
             })
 
