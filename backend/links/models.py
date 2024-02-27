@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.core.exceptions import ValidationError
 from django.core.validators import MaxLengthValidator, MinLengthValidator
 from django.db import models
 from django.utils import timezone
@@ -9,7 +8,6 @@ from core.enums import Limits
 
 from . import validators
 from .services.short_links import check_links_group_constraints, get_short_code
-from .services.user_campaigns import check_campaign_group_constraints
 from .services.user_groups import (check_group_constraints,
                                    full_clean_check_validation_name,
                                    set_color_for_group)
@@ -167,11 +165,6 @@ class ShortLink(models.Model):
         verbose_name = _('Короткая ссылка')
         verbose_name_plural = _('Короткие ссылки')
         db_table = 'links_short_link'
-        ordering = [
-            'original_link', 'short', 'created_at',
-            'clicks_count', 'last_clicked_at', 'is_active',
-            'owner', 'group',
-        ]
 
 
 # КАМПАНИИ ДЛЯ ГРУПП. ПОКА НЕ РЕАЛИЗОВАНЫ ИЗ-ЗА СОМНЕНИЯ В НЕОБХОДИМОСТИ

@@ -1,6 +1,5 @@
 from typing import OrderedDict
 
-from django.db.transaction import atomic
 from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
@@ -60,6 +59,8 @@ class ShortLinkWriteSerializer(serializers.ModelSerializer):
     """Сериализатор для записи ссылок"""
     alias = serializers.CharField(
         source='short',
+        label='Алиас',
+        help_text='Короткий код ссылки',
         max_length=Limits.MAX_LEN_LINK_SHORT_CODE,
         min_length=Limits.MIN_LEN_LINK_SHORT_CODE,
         validators=[validators.AliasCodeValidator],
