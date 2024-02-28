@@ -7,7 +7,9 @@ from django.utils.translation import gettext_lazy as _
 from core.enums import Limits
 
 from . import validators
-from .services.short_links import check_links_group_constraints, get_short_code
+from .services.short_links import (check_links_group_constraints,
+                                   full_clean_check_validation_short,
+                                   get_short_code)
 from .services.user_groups import (check_group_constraints,
                                    full_clean_check_validation_name,
                                    set_color_for_group)
@@ -141,13 +143,17 @@ class ShortLink(models.Model):
         """Проверка ограничений ссылки"""
         check_links_group_constraints(self.group)
 
+    def try_full_clean(self):
+        """Запустить проверку полей модели"""
+        return full_clean_check_validation_short(self)
+
     def save(self, *args, **kwargs):
         """Сохранить ссылку"""
         if not self.short:
             self.short = self.set_short()
 
         if 'clean' in dir(self):
-            self.full_clean()
+            self.try_full_clean()
 
         if self.pk:
             if self.clicks_count == 0:

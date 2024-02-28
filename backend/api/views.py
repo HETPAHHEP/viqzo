@@ -1,5 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets
+from rest_framework import exceptions, viewsets
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -61,6 +61,9 @@ class ShortLinkViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         link = self.get_object()
+
+        if not link.is_active:
+            raise exceptions.NotFound
 
         link.clicks_count += 1
         link.save()

@@ -47,6 +47,10 @@ def full_clean_check_validation_name(group):
     try:
         group.full_clean()  # Выполняем проверку перед сохранением
     except DjangoValidationError as e:
+        if 'name' in e.error_dict:
+            raise ValidationError({
+                'name_error': e.error_dict['name']
+            })
 
         if '__all__' in e.error_dict:
             raise ValidationError({

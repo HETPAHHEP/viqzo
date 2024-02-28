@@ -4,10 +4,10 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers
 
 from core.enums import Limits
-from links import validators
 from links.models import ShortLink, UserGroup
 
 from .services.short_links import validate_alias, validate_group_for_link
+from .validators import AliasCodeValidator
 
 
 class UserGroupReadSerializer(serializers.ModelSerializer):
@@ -63,7 +63,7 @@ class ShortLinkWriteSerializer(serializers.ModelSerializer):
         help_text='Короткий код ссылки',
         max_length=Limits.MAX_LEN_LINK_SHORT_CODE,
         min_length=Limits.MIN_LEN_LINK_SHORT_CODE,
-        validators=[validators.AliasCodeValidator],
+        validators=[AliasCodeValidator],
         required=False
     )
 
@@ -88,6 +88,7 @@ class ShortLinkWriteSerializer(serializers.ModelSerializer):
 class ShortLinkEditSerializer(serializers.Serializer):
     """Сериализатор для активации/деактивации"""
     is_active = serializers.BooleanField(
+        required=False,
         help_text=_('Активна ли ссылка?')
     )
     group = serializers.PrimaryKeyRelatedField(
@@ -95,5 +96,24 @@ class ShortLinkEditSerializer(serializers.Serializer):
     )
 
     def validate(self, attrs):
+        """Проверка введённых данных"""
         user = self.context.get('request').user
         return validate_group_for_link(attrs, user)
+
+    def update(self, instance, validated_data):
+        """Изменение группы и статуса ссылки"""
+        active_status = validated_data.pop('is_active', None)
+        group = validated_data.pop('group', None)
+
+        if type(active_status) is bool and instance.is_active != active_status:
+            instance.is_active = active_status
+
+        if group and instance.group != group:
+            instance.group = group
+
+        instance.save()
+
+        return instance
+
+    def to_representation(self, instance):
+        return ShortLinkReadSerializer(instance).data
