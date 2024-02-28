@@ -2,7 +2,7 @@ import re
 
 import pytest
 
-from backend.api.services.url_short_logic import LinkHash, LinkIDZeroError
+from backend.links.services.url_short_logic import LinkHash, LinkIDZeroError
 from backend.core.enums import Limits
 
 
@@ -20,11 +20,11 @@ class Test00BasicURLShort:
         )
 
     def test_02_02_check_code_len(self):
-        limit = Limits.MAX_LEN_LINK_SHORT_CODE
+        limit = Limits.BASIC_LEN_SHORT_CODE
         code_len = len(LinkHash().get_short_code())
 
         assert code_len == limit, (
-                f'Короткий код длиной {code_len} не соответствует нужной длине {limit}'
+                f'Короткий код длиной {code_len} не соответствует нужной длине лимита: {limit}'
             )
 
     def test_03_01_expected_result_of_generated_code(self):

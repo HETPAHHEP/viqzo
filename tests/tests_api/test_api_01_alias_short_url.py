@@ -110,3 +110,197 @@ class Test01AliasShort:
             f'GET-запрос с кодом на api/links/{code}/ для получения полной ссылки '
             f'не посчитал повторно клики на нужную ссылку. '
         )
+
+    def test_03_01_create_alias_url_auth(self, user_client, original_link_with_alias):
+        response = user_client.post('/api/links/', data=original_link_with_alias)
+
+        assert response.status_code == HTTPStatus.CREATED, (
+            f'POST-запрос с валидной ссылкой от авторизованного пользователя '
+            f'на api/links/ для создания короткого кода не возвращает ответ со статусом 201.'
+        )
+
+    def test_04_01_edit_alias_link_active_status_true_after_create(
+            self, user_client, original_link_with_alias, is_active_status_true_str_capital,
+            is_active_status_true_bool, is_active_status_true_num, is_active_status_true_str_lowercase
+    ):
+        short_code = utils.create_short_link(user_client, original_link_with_alias)
+
+        response = user_client.patch(f'/api/links/{short_code}/', data=is_active_status_true_bool)
+
+        assert (response.status_code == HTTPStatus.OK
+                and response.data['is_active'] == is_active_status_true_bool.get('is_active')), (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса alias ссылки '
+            f'не возвращает ответ со статусом 200 (пользователь может изменить статус).'
+        )
+
+        response = user_client.patch(f'/api/links/{short_code}/', data=is_active_status_true_num)
+
+        assert (response.status_code == HTTPStatus.OK
+                and response.data['is_active'] == is_active_status_true_num.get('is_active')), (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса alias ссылки '
+            f'не возвращает ответ со статусом 200 (пользователь может изменить статус).'
+        )
+
+        response = user_client.patch(f'/api/links/{short_code}/', data=is_active_status_true_str_capital)
+
+        assert (response.status_code == HTTPStatus.OK
+                and type(response.data['is_active']) == bool
+                and response.data['is_active']), (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса alias ссылки '
+            f'не возвращает ответ со статусом 200 (пользователь может изменить статус).'
+        )
+
+        response = user_client.patch(f'/api/links/{short_code}/', data=is_active_status_true_str_lowercase)
+
+        assert (response.status_code == HTTPStatus.OK
+                and type(response.data['is_active']) == bool
+                and response.data['is_active']), (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса alias ссылки '
+            f'не возвращает ответ со статусом 200 (пользователь может изменить статус).'
+        )
+
+    def test_04_02_edit_alias_link_active_status_false_after_create(
+            self, user_client, original_link_with_alias, is_active_status_false_str_capital,
+            is_active_status_false_bool, is_active_status_false_num, is_active_status_false_str_lowercase
+    ):
+        short_code = utils.create_short_link(user_client, original_link_with_alias)
+
+        response = user_client.patch(f'/api/links/{short_code}/', data=is_active_status_false_bool)
+
+        assert (response.status_code == HTTPStatus.OK
+                and type(response.data['is_active']) == bool
+                and not response.data['is_active']), (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса alias ссылки '
+            f'не возвращает ответ со статусом 200 (пользователь может изменить статус).'
+        )
+
+        response = user_client.patch(f'/api/links/{short_code}/', data=is_active_status_false_num)
+
+        assert (response.status_code == HTTPStatus.OK
+                and type(response.data['is_active']) == bool
+                and not response.data['is_active']), (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса alias ссылки '
+            f'не возвращает ответ со статусом 200 (пользователь может изменить статус).'
+        )
+
+        response = user_client.patch(f'/api/links/{short_code}/', data=is_active_status_false_str_capital)
+
+        assert (response.status_code == HTTPStatus.OK
+                and type(response.data['is_active']) == bool
+                and not response.data['is_active']), (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса alias ссылки '
+            f'не возвращает ответ со статусом 200 (пользователь может изменить статус).'
+        )
+
+        response = user_client.patch(f'/api/links/{short_code}/', data=is_active_status_false_str_lowercase)
+
+        assert (response.status_code == HTTPStatus.OK
+                and type(response.data['is_active']) == bool
+                and not response.data['is_active']), (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса alias ссылки '
+            f'не возвращает ответ со статусом 200 (пользователь может изменить статус).'
+        )
+
+    def test_04_03_edit_alias_link_active_status_with_false_status(
+            self, user_client, original_link_with_alias, is_active_status_false_bool,
+            is_active_status_true_bool,
+    ):
+        short_code = utils.create_short_link(user_client, original_link_with_alias)
+
+        response = user_client.patch(f'/api/links/{short_code}/', data=is_active_status_false_bool)
+
+        assert (response.status_code == HTTPStatus.OK
+                and type(response.data['is_active']) == bool
+                and not response.data['is_active']), (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса alias ссылки '
+            f'не возвращает ответ со статусом 200 (пользователь может изменить статус).'
+        )
+
+        response = user_client.patch(f'/api/links/{short_code}/', data=is_active_status_false_bool)
+
+        assert (response.status_code == HTTPStatus.OK
+                and type(response.data['is_active']) == bool
+                and not response.data['is_active']), (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса alias ссылки '
+            f'не возвращает ответ со статусом 200 (пользователь может изменить статус).'
+        )
+
+        response = user_client.patch(f'/api/links/{short_code}/', data=is_active_status_true_bool)
+
+        assert (response.status_code == HTTPStatus.OK
+                and type(response.data['is_active']) == bool
+                and response.data['is_active']), (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса alias ссылки '
+            f'не возвращает ответ со статусом 200 (пользователь может изменить статус).'
+        )
+
+    def test_04_04_edit_not_own_alias_link_active_status(
+            self, user_client, user_client2, original_link_with_alias, is_active_status_false_bool,
+            is_active_status_true_bool,
+    ):
+        short_code = utils.create_short_link(user_client, original_link_with_alias)
+
+        response = user_client2.patch(f'/api/links/{short_code}/', data=is_active_status_false_bool)
+
+        assert response.status_code == HTTPStatus.NOT_FOUND, (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса чужой alias ссылки '
+            f'не возвращает ответ со статусом 404 (пользователь не может изменить статус чужой ссылки).'
+        )
+
+        response = user_client2.patch(f'/api/links/{short_code}/', data=is_active_status_true_bool)
+
+        assert response.status_code == HTTPStatus.NOT_FOUND, (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса чужой alias ссылки '
+            f'не возвращает ответ со статусом 404 (пользователь не может изменить статус чужой ссылки).'
+        )
+
+        response = user_client.patch(f'/api/links/{short_code}/', data=is_active_status_false_bool)
+
+        assert response.status_code == HTTPStatus.OK, (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса alias ссылки '
+            f'не возвращает ответ со статусом 200 (пользователь не может изменить статус чужой ссылки).'
+        )
+
+        response = user_client2.patch(f'/api/links/{short_code}/', data=is_active_status_true_bool)
+
+        assert response.status_code == HTTPStatus.NOT_FOUND, (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса чужой alias ссылки '
+            f'не возвращает ответ со статусом 404 (пользователь не может изменить статус чужой ссылки).'
+        )
+
+    def test_04_05_check_show_alias_link_after_change_status(
+            self, user_client, original_link_with_alias, is_active_status_false_bool,
+    ):
+        short_code = utils.create_short_link(user_client, original_link_with_alias)
+
+        response = user_client.patch(f'/api/links/{short_code}/', data=is_active_status_false_bool)
+
+        assert (response.status_code == HTTPStatus.OK
+                and response.data['is_active'] == is_active_status_false_bool.get('is_active')), (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса alias ссылки '
+            f'не возвращает ответ со статусом 200 (пользователь может изменить статус).'
+        )
+
+        response = user_client.get(f'/api/links/{short_code}/')
+
+        assert response.status_code == HTTPStatus.NOT_FOUND, (
+            f'GET-запрос от авторизованного пользователя '
+            f'на /api/links/short_code для получения полной ссылки после изменения статуса на False '
+            f'не возвращает ответ со статусом 404 (пользователь может отключить выдачу полной ссылки).'
+        )

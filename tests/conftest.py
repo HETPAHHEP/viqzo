@@ -6,6 +6,5 @@ assert get_version() == '4.2.2', 'Пожалуйста, используйте �
 pytest_plugins = [
     'tests.fixtures.fixture_users',
     'tests.fixtures.fixture_short_url',
-    'tests.fixtures.fixture_alias_url',
     'tests.fixtures.fixture_usergroup',
 ]

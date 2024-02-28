@@ -16,21 +16,24 @@ class Test00BasicShort:
         )
 
     def test_01_02_create_short_link_and_check_idempotency(self, client, valid_original_link):
-        response = client.post('/api/links/', data=valid_original_link)
-        assert response.status_code == HTTPStatus.CREATED, (
+        response_1 = client.post('/api/links/', data=valid_original_link)
+        assert response_1.status_code == HTTPStatus.CREATED, (
             f'POST-запрос с валидной ссылкой от неавторизованного пользователя '
             f'на api/links/ для создания короткого кода не возвращает ответ со статусом 201.'
         )
 
-        response = client.post('/api/links/', data=valid_original_link)
-        assert response.status_code == HTTPStatus.OK, (
+        response_2 = client.post('/api/links/', data=valid_original_link)
+        assert (response_2.status_code == HTTPStatus.CREATED
+                and response_2.data.get('short') != response_1.data.get('short')), (
             f'POST-запрос с валидной ссылкой от неавторизованного пользователя '
             f'на api/links/ для создания короткого кода для уже созданной ссылки '
             f'не возвращает ответ со статусом 200.'
         )
 
-        response = client.post('/api/links/', data=valid_original_link)
-        assert response.status_code == HTTPStatus.OK, (
+        response_3 = client.post('/api/links/', data=valid_original_link)
+        assert (response_3.status_code == HTTPStatus.CREATED
+                and response_3.data.get('short') != response_1.data.get('short')
+                and response_3.data.get('short') != response_2.data.get('short')), (
             f'POST-запрос с валидной ссылкой от неавторизованного пользователя '
             f'на api/links/ для создания короткого кода для уже созданной ссылки '
             f'не возвращает ответ со статусом 200.'
@@ -96,9 +99,194 @@ class Test00BasicShort:
 
     def test_03_01_create_short_url_auth(self, user_client, valid_original_link):
         response = user_client.post('/api/links/', data=valid_original_link)
-        assert (
-            response.status_code == HTTPStatus.CREATED
-        ), (
+
+        assert response.status_code == HTTPStatus.CREATED, (
             f'POST-запрос с валидной ссылкой от авторизованного пользователя '
             f'на api/links/ для создания короткого кода не возвращает ответ со статусом 201.'
+        )
+
+    def test_04_01_edit_short_url_active_status_true_after_create(
+            self, user_client, valid_original_link, is_active_status_true_str_capital,
+            is_active_status_true_bool, is_active_status_true_num, is_active_status_true_str_lowercase
+    ):
+        short_code = utils.create_short_link(user_client, valid_original_link)
+
+        response = user_client.patch(f'/api/links/{short_code}/', data=is_active_status_true_bool)
+
+        assert (response.status_code == HTTPStatus.OK
+                and response.data['is_active'] == is_active_status_true_bool.get('is_active')), (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса short ссылки '
+            f'не возвращает ответ со статусом 200 (пользователь может изменить статус).'
+        )
+
+        response = user_client.patch(f'/api/links/{short_code}/', data=is_active_status_true_num)
+
+        assert (response.status_code == HTTPStatus.OK
+                and response.data['is_active'] == is_active_status_true_num.get('is_active')), (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса short ссылки '
+            f'не возвращает ответ со статусом 200 (пользователь может изменить статус).'
+        )
+
+        response = user_client.patch(f'/api/links/{short_code}/', data=is_active_status_true_str_capital)
+
+        assert (response.status_code == HTTPStatus.OK
+                and type(response.data['is_active']) == bool
+                and response.data['is_active']), (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса short ссылки '
+            f'не возвращает ответ со статусом 200 (пользователь может изменить статус).'
+        )
+
+        response = user_client.patch(f'/api/links/{short_code}/', data=is_active_status_true_str_lowercase)
+
+        assert (response.status_code == HTTPStatus.OK
+                and type(response.data['is_active']) == bool
+                and response.data['is_active']), (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса short ссылки '
+            f'не возвращает ответ со статусом 200 (пользователь может изменить статус).'
+        )
+
+    def test_04_02_edit_short_url_active_status_false_after_create(
+            self, user_client, valid_original_link, is_active_status_false_str_capital,
+            is_active_status_false_bool, is_active_status_false_num, is_active_status_false_str_lowercase
+    ):
+        short_code = utils.create_short_link(user_client, valid_original_link)
+
+        response = user_client.patch(f'/api/links/{short_code}/', data=is_active_status_false_bool)
+
+        assert (response.status_code == HTTPStatus.OK
+                and type(response.data['is_active']) == bool
+                and not response.data['is_active']), (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса short ссылки '
+            f'не возвращает ответ со статусом 200 (пользователь может изменить статус).'
+        )
+
+        response = user_client.patch(f'/api/links/{short_code}/', data=is_active_status_false_num)
+
+        assert (response.status_code == HTTPStatus.OK
+                and type(response.data['is_active']) == bool
+                and not response.data['is_active']), (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса short ссылки '
+            f'не возвращает ответ со статусом 200 (пользователь может изменить статус).'
+        )
+
+        response = user_client.patch(f'/api/links/{short_code}/', data=is_active_status_false_str_capital)
+
+        assert (response.status_code == HTTPStatus.OK
+                and type(response.data['is_active']) == bool
+                and not response.data['is_active']), (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса short ссылки '
+            f'не возвращает ответ со статусом 200 (пользователь может изменить статус).'
+        )
+
+        response = user_client.patch(f'/api/links/{short_code}/', data=is_active_status_false_str_lowercase)
+
+        assert (response.status_code == HTTPStatus.OK
+                and type(response.data['is_active']) == bool
+                and not response.data['is_active']), (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса short ссылки '
+            f'не возвращает ответ со статусом 200 (пользователь может изменить статус).'
+        )
+
+    def test_04_03_edit_link_active_status_with_false_status(
+            self, user_client, valid_original_link, is_active_status_false_bool,
+            is_active_status_true_bool,
+    ):
+        short_code = utils.create_short_link(user_client, valid_original_link)
+
+        response = user_client.patch(f'/api/links/{short_code}/', data=is_active_status_false_bool)
+
+        assert (response.status_code == HTTPStatus.OK
+                and type(response.data['is_active']) == bool
+                and not response.data['is_active']), (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса short ссылки '
+            f'не возвращает ответ со статусом 200 (пользователь может изменить статус).'
+        )
+
+        response = user_client.patch(f'/api/links/{short_code}/', data=is_active_status_false_bool)
+
+        assert (response.status_code == HTTPStatus.OK
+                and type(response.data['is_active']) == bool
+                and not response.data['is_active']), (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса short ссылки '
+            f'не возвращает ответ со статусом 200 (пользователь может изменить статус).'
+        )
+
+        response = user_client.patch(f'/api/links/{short_code}/', data=is_active_status_true_bool)
+
+        assert (response.status_code == HTTPStatus.OK
+                and type(response.data['is_active']) == bool
+                and response.data['is_active']), (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса short ссылки '
+            f'не возвращает ответ со статусом 200 (пользователь может изменить статус).'
+        )
+
+    def test_04_04_edit_not_own_link_active_status(
+            self, user_client, user_client2, valid_original_link , is_active_status_false_bool,
+            is_active_status_true_bool,
+    ):
+        short_code = utils.create_short_link(user_client, valid_original_link)
+
+        response = user_client2.patch(f'/api/links/{short_code}/', data=is_active_status_false_bool)
+
+        assert response.status_code == HTTPStatus.NOT_FOUND, (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса чужой short ссылки '
+            f'не возвращает ответ со статусом 404 (пользователь не может изменить статус чужой ссылки).'
+        )
+
+        response = user_client2.patch(f'/api/links/{short_code}/', data=is_active_status_true_bool)
+
+        assert response.status_code == HTTPStatus.NOT_FOUND, (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса чужой short ссылки '
+            f'не возвращает ответ со статусом 404 (пользователь не может изменить статус чужой ссылки).'
+        )
+
+        response = user_client.patch(f'/api/links/{short_code}/', data=is_active_status_false_bool)
+
+        assert response.status_code == HTTPStatus.OK, (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса short ссылки '
+            f'не возвращает ответ со статусом 200 (пользователь не может изменить статус чужой ссылки).'
+        )
+
+        response = user_client2.patch(f'/api/links/{short_code}/', data=is_active_status_true_bool)
+
+        assert response.status_code == HTTPStatus.NOT_FOUND, (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса чужой short ссылки '
+            f'не возвращает ответ со статусом 404 (пользователь не может изменить статус чужой ссылки).'
+        )
+
+    def test_04_05_check_show_short_link_after_change_status(
+            self, user_client, valid_original_link, is_active_status_false_bool,
+    ):
+        short_code = utils.create_short_link(user_client, valid_original_link)
+
+        response = user_client.patch(f'/api/links/{short_code}/', data=is_active_status_false_bool)
+
+        assert (response.status_code == HTTPStatus.OK
+                and response.data['is_active'] == is_active_status_false_bool.get('is_active')), (
+            f'PATCH-запрос от авторизованного пользователя '
+            f'на /api/links/ для изменения статуса short ссылки '
+            f'не возвращает ответ со статусом 200 (пользователь может изменить статус).'
+        )
+
+        response = user_client.get(f'/api/links/{short_code}/')
+
+        assert response.status_code == HTTPStatus.NOT_FOUND, (
+            f'GET-запрос от авторизованного пользователя '
+            f'на /api/links/short_code для получения полной ссылки после изменения статуса на False '
+            f'не возвращает ответ со статусом 404 (пользователь может отключить выдачу полной ссылки).'
         )
