@@ -1,0 +1,1158 @@
+openapi: 3.0.3
+info:
+  title: Viqzo API
+  version: 1.0.0
+  description: Сервис сокращенный ссылок
+paths:
+  /api/auth/token/login/:
+    post:
+      operationId: api_auth_token_login_create
+      description: Use this endpoint to obtain user authentication token.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenCreate'
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenCreate'
+          description: ''
+  /api/auth/token/logout/:
+    post:
+      operationId: api_auth_token_logout_create
+      description: Use this endpoint to logout user (remove user authentication token).
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          description: No response body
+  /api/groups/:
+    get:
+      operationId: api_groups_list
+      description: |-
+        ViewSet для получения/добавления/удаления ссылки из группы,
+        а также изменения информации о группе.
+      parameters:
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedUserGroupReadList'
+          description: ''
+    post:
+      operationId: api_groups_create
+      description: |-
+        ViewSet для получения/добавления/удаления ссылки из группы,
+        а также изменения информации о группе.
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserGroupWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserGroupWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserGroupWrite'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserGroupWrite'
+          description: ''
+  /api/groups/{id}/:
+    get:
+      operationId: api_groups_retrieve
+      description: |-
+        ViewSet для получения/добавления/удаления ссылки из группы,
+        а также изменения информации о группе.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserGroupRead'
+          description: ''
+    put:
+      operationId: api_groups_update
+      description: |-
+        ViewSet для получения/добавления/удаления ссылки из группы,
+        а также изменения информации о группе.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserGroupWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserGroupWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserGroupWrite'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserGroupWrite'
+          description: ''
+    patch:
+      operationId: api_groups_partial_update
+      description: |-
+        ViewSet для получения/добавления/удаления ссылки из группы,
+        а также изменения информации о группе.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserGroupWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserGroupWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserGroupWrite'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserGroupWrite'
+          description: ''
+    delete:
+      operationId: api_groups_destroy
+      description: |-
+        ViewSet для получения/добавления/удаления ссылки из группы,
+        а также изменения информации о группе.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/links/:
+    get:
+      operationId: api_links_list
+      description: |-
+        ViewSet для действий с короткой ссылкой
+        (создание, изменение, удаление,
+        получение всех ссылок и оригинальной ссылки)
+      parameters:
+      - name: limit
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: offset
+        required: false
+        in: query
+        description: The initial index from which to return the results.
+        schema:
+          type: integer
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedShortLinkReadList'
+          description: ''
+    post:
+      operationId: api_links_create
+      description: |-
+        ViewSet для действий с короткой ссылкой
+        (создание, изменение, удаление,
+        получение всех ссылок и оригинальной ссылки)
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShortLinkWrite'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ShortLinkWrite'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ShortLinkWrite'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShortLinkWrite'
+          description: ''
+  /api/links/{short}/:
+    get:
+      operationId: api_links_retrieve
+      description: |-
+        ViewSet для действий с короткой ссылкой
+        (создание, изменение, удаление,
+        получение всех ссылок и оригинальной ссылки)
+      parameters:
+      - in: path
+        name: short
+        schema:
+          type: string
+          title: Короткий код ссылки
+        required: true
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShortLinkRead'
+          description: ''
+    put:
+      operationId: api_links_update
+      description: |-
+        ViewSet для действий с короткой ссылкой
+        (создание, изменение, удаление,
+        получение всех ссылок и оригинальной ссылки)
+      parameters:
+      - in: path
+        name: short
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ShortLinkEdit'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/ShortLinkEdit'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/ShortLinkEdit'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShortLinkEdit'
+          description: ''
+    patch:
+      operationId: api_links_partial_update
+      description: |-
+        ViewSet для действий с короткой ссылкой
+        (создание, изменение, удаление,
+        получение всех ссылок и оригинальной ссылки)
+      parameters:
+      - in: path
+        name: short
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedShortLinkEdit'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedShortLinkEdit'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedShortLinkEdit'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShortLinkEdit'
+          description: ''
+    delete:
+      operationId: api_links_destroy
+      description: |-
+        ViewSet для действий с короткой ссылкой
+        (создание, изменение, удаление,
+        получение всех ссылок и оригинальной ссылки)
+      parameters:
+      - in: path
+        name: short
+        schema:
+          type: string
+        required: true
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/users/:
+    get:
+      operationId: api_users_list
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+          description: ''
+    post:
+      operationId: api_users_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserCreate'
+        required: true
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserCreate'
+          description: ''
+  /api/users/{id}/:
+    get:
+      operationId: api_users_retrieve
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this пользователь.
+        required: true
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    put:
+      operationId: api_users_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this пользователь.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: api_users_partial_update
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this пользователь.
+        required: true
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    delete:
+      operationId: api_users_destroy
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: integer
+        description: A unique integer value identifying this пользователь.
+        required: true
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/users/activation/:
+    post:
+      operationId: api_users_activation_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Activation'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/Activation'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/Activation'
+        required: true
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Activation'
+          description: ''
+  /api/users/me/:
+    get:
+      operationId: api_users_me_retrieve
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    put:
+      operationId: api_users_me_update
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/User'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/User'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    patch:
+      operationId: api_users_me_partial_update
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUser'
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
+    delete:
+      operationId: api_users_me_destroy
+      tags:
+      - api
+      security:
+      - tokenAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/users/resend_activation/:
+    post:
+      operationId: api_users_resend_activation_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendEmailReset'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SendEmailReset'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SendEmailReset'
+        required: true
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendEmailReset'
+          description: ''
+  /api/users/reset_password/:
+    post:
+      operationId: api_users_reset_password_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendEmailReset'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SendEmailReset'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SendEmailReset'
+        required: true
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendEmailReset'
+          description: ''
+  /api/users/reset_password_confirm/:
+    post:
+      operationId: api_users_reset_password_confirm_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRetype'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRetype'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PasswordResetConfirmRetype'
+        required: true
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PasswordResetConfirmRetype'
+          description: ''
+  /api/users/reset_username/:
+    post:
+      operationId: api_users_reset_username_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SendEmailReset'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SendEmailReset'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SendEmailReset'
+        required: true
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SendEmailReset'
+          description: ''
+  /api/users/reset_username_confirm/:
+    post:
+      operationId: api_users_reset_username_confirm_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UsernameResetConfirm'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UsernameResetConfirm'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UsernameResetConfirm'
+        required: true
+      security:
+      - tokenAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsernameResetConfirm'
+          description: ''
+  /api/users/set_password/:
+    post:
+      operationId: api_users_set_password_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetPassword'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SetPassword'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SetPassword'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetPassword'
+          description: ''
+  /api/users/set_username/:
+    post:
+      operationId: api_users_set_username_create
+      tags:
+      - api
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetUsername'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/SetUsername'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/SetUsername'
+        required: true
+      security:
+      - tokenAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetUsername'
+          description: ''
+components:
+  schemas:
+    Activation:
+      type: object
+      properties:
+        uid:
+          type: string
+        token:
+          type: string
+      required:
+      - token
+      - uid
+    PaginatedShortLinkReadList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=400&limit=100
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=200&limit=100
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ShortLinkRead'
+    PaginatedUserGroupReadList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=400&limit=100
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?offset=200&limit=100
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserGroupRead'
+    PasswordResetConfirmRetype:
+      type: object
+      properties:
+        uid:
+          type: string
+        token:
+          type: string
+        new_password:
+          type: string
+        re_new_password:
+          type: string
+      required:
+      - new_password
+      - re_new_password
+      - token
+      - uid
+    PatchedShortLinkEdit:
+      type: object
+      description: Сериализатор для активации/деактивации
+      properties:
+        is_active:
+          type: boolean
+          description: Активна ли ссылка?
+        group:
+          type: integer
+    PatchedUser:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          title: Адрес электронной почты
+          maxLength: 254
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+          title: Имя пользователя
+          description: Обязательное поле. Не более 150 символов. Только буквы, цифры
+            и символы @/./+/-/_.
+    PatchedUserGroupWrite:
+      type: object
+      description: Сериализатор для создания/изменения информации о группы
+      properties:
+        name:
+          type: string
+          title: Имя группы
+          maxLength: 30
+    SendEmailReset:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+      required:
+      - email
+    SetPassword:
+      type: object
+      properties:
+        new_password:
+          type: string
+        current_password:
+          type: string
+      required:
+      - current_password
+      - new_password
+    SetUsername:
+      type: object
+      properties:
+        current_password:
+          type: string
+        new_username:
+          type: string
+          title: Имя пользователя
+          description: Обязательное поле. Не более 150 символов. Только буквы, цифры
+            и символы @/./+/-/_.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+      required:
+      - current_password
+      - new_username
+    ShortLinkEdit:
+      type: object
+      description: Сериализатор для активации/деактивации
+      properties:
+        is_active:
+          type: boolean
+          description: Активна ли ссылка?
+        group:
+          type: integer
+    ShortLinkRead:
+      type: object
+      description: Сериализатор для показа ссылок
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        original_link:
+          type: string
+          format: uri
+          title: Оригинальная ссылка
+          maxLength: 2000
+        short:
+          type: string
+          title: Короткий код ссылки
+          maxLength: 30
+          minLength: 4
+        owner:
+          type: string
+          title: Имя пользователя
+          description: Обязательное поле. Не более 150 символов. Только буквы, цифры
+            и символы @/./+/-/_.
+          readOnly: true
+        clicks_count:
+          type: integer
+          title: Переходов по ссылке
+        last_clicked_at:
+          type: string
+          format: date-time
+          nullable: true
+          title: Последнее время клика
+        is_active:
+          type: boolean
+          title: Активна ли ссылка?
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Дата создания
+        group:
+          allOf:
+          - $ref: '#/components/schemas/UserGroupRead'
+          readOnly: true
+      required:
+      - created_at
+      - group
+      - id
+      - original_link
+      - owner
+      - short
+    ShortLinkWrite:
+      type: object
+      description: Сериализатор для записи ссылок
+      properties:
+        original_link:
+          type: string
+          format: uri
+          title: Оригинальная ссылка
+          maxLength: 2000
+        alias:
+          type: string
+          title: Алиас
+          description: Короткий код ссылки
+          maxLength: 30
+          minLength: 4
+        group:
+          type: integer
+          nullable: true
+          title: Группа пользователя
+      required:
+      - original_link
+    TokenCreate:
+      type: object
+      properties:
+        password:
+          type: string
+        username:
+          type: string
+    User:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          title: Адрес электронной почты
+          maxLength: 254
+        id:
+          type: integer
+          readOnly: true
+        username:
+          type: string
+          readOnly: true
+          title: Имя пользователя
+          description: Обязательное поле. Не более 150 символов. Только буквы, цифры
+            и символы @/./+/-/_.
+      required:
+      - id
+      - username
+    UserCreate:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          title: Адрес электронной почты
+          maxLength: 254
+        username:
+          type: string
+          title: Имя пользователя
+          description: Обязательное поле. Не более 150 символов. Только буквы, цифры
+            и символы @/./+/-/_.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+        id:
+          type: integer
+          readOnly: true
+        password:
+          type: string
+          writeOnly: true
+      required:
+      - id
+      - password
+      - username
+    UserGroupRead:
+      type: object
+      description: Сериализатор для просмотра группы
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        name:
+          type: string
+          title: Имя группы
+          maxLength: 30
+        owner:
+          type: string
+          title: Имя пользователя
+          description: Обязательное поле. Не более 150 символов. Только буквы, цифры
+            и символы @/./+/-/_.
+          readOnly: true
+        color:
+          type: string
+          title: Цвет
+          maxLength: 7
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+          title: Дата создания
+      required:
+      - created_at
+      - id
+      - name
+      - owner
+    UserGroupWrite:
+      type: object
+      description: Сериализатор для создания/изменения информации о группы
+      properties:
+        name:
+          type: string
+          title: Имя группы
+          maxLength: 30
+      required:
+      - name
+    UsernameResetConfirm:
+      type: object
+      properties:
+        new_username:
+          type: string
+          title: Имя пользователя
+          description: Обязательное поле. Не более 150 символов. Только буквы, цифры
+            и символы @/./+/-/_.
+          pattern: ^[\w.@+-]+$
+          maxLength: 150
+      required:
+      - new_username
+  securitySchemes:
+    tokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication with required prefix "Token"
