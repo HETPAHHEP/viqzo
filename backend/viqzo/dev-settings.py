@@ -42,7 +42,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'rest_framework',
-    'rest_framework.authtoken',
+    # 'rest_framework_simplejwt',
     'djoser',
     'django_filters',
 
@@ -55,6 +55,15 @@ INSTALLED_APPS = [
 REST_FRAMEWORK.update(
     {'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema'}
 )
+
+
+# SIMPLE JWT DEV-SETTINGS
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=10),
+    'AUTH_HEADER_TYPES': ('Bearer',),
+    'SIGNING_KEY': os.getenv('JWT_SECRET_KEY'),
+}
 
 
 SPECTACULAR_SETTINGS = {
