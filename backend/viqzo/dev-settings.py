@@ -61,14 +61,14 @@ REST_FRAMEWORK.update(
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=10),
-    'AUTH_HEADER_TYPES': ('Token',),
+    'AUTH_HEADER_TYPES': ('Bearer',),
     'SIGNING_KEY': os.getenv('JWT_SECRET_KEY'),
 }
 
 
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Viqzo API',
-    'DESCRIPTION': 'Сервис сокращенный ссылок',
+    'DESCRIPTION': 'Сервис сокращенных ссылок',
     'VERSION': '1.0.0',
     'SERVE_INCLUDE_SCHEMA': False,
 }
