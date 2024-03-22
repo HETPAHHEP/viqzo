@@ -186,7 +186,7 @@ DJOSER = {
 
     'LOGOUT_ON_PASSWORD_CHANGE': True,
 
-    # 'HIDE_USERS': False,
+    'HIDE_USERS': False,
 
     'PERMISSIONS': {
         'user_list': ['rest_framework.permissions.IsAdminUser']

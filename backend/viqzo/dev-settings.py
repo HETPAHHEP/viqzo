@@ -57,11 +57,11 @@ REST_FRAMEWORK.update(
 )
 
 
-# SIMPLE JWT DEV-SETTINGS
+# SIMPLE JWT DEV-SETTINGS. FOR DEV ONLY
 
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=10),
-    'AUTH_HEADER_TYPES': ('Bearer',),
+    'AUTH_HEADER_TYPES': ('Token',),
     'SIGNING_KEY': os.getenv('JWT_SECRET_KEY'),
 }
 
