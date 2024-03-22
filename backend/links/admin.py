@@ -8,7 +8,7 @@ from .models import ShortLink, UserGroup
 @admin.register(ShortLink)
 class ShortLinkAdmin(admin.ModelAdmin):
     list_display = [
-        'original_link', 'owner', 'short',
+        'id', 'original_link', 'owner', 'short',
         'clicks_count', 'created_at'
     ]
     search_fields = ['original_link', 'short']
