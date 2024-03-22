@@ -2,52 +2,67 @@ openapi: 3.0.3
 info:
   title: Viqzo API
   version: 1.0.0
-  description: Сервис сокращенный ссылок
+  description: Сервис сокращенных ссылок
 paths:
-  /api/auth/token/login/:
+  /api/auth/jwt/create/:
     post:
-      operationId: api_auth_token_login_create
-      description: Use this endpoint to obtain user authentication token.
+      operationId: auth_jwt_create_create
+      description: |-
+        Принимает набор учетных данных пользователя и возвращает access и refresh пару JWT 
+        для подтверждения аутентификации этих учетных данных.
       tags:
-      - api
+      - Аутентификация по JWT
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TokenCreate'
+              $ref: '#/components/schemas/TokenObtainPair'
           application/x-www-form-urlencoded:
             schema:
-              $ref: '#/components/schemas/TokenCreate'
+              $ref: '#/components/schemas/TokenObtainPair'
           multipart/form-data:
             schema:
-              $ref: '#/components/schemas/TokenCreate'
-      security:
-      - tokenAuth: []
-      - {}
+              $ref: '#/components/schemas/TokenObtainPair'
+        required: true
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TokenCreate'
+                $ref: '#/components/schemas/TokenObtainPair'
           description: ''
-  /api/auth/token/logout/:
+  /api/auth/jwt/refresh/:
     post:
-      operationId: api_auth_token_logout_create
-      description: Use this endpoint to logout user (remove user authentication token).
+      operationId: auth_jwt_refresh_create
+      description: |-
+        Принимает JWT типа refresh и возвращает JWT типа access,
+        если токен обновления действителен.
       tags:
-      - api
-      security:
-      - tokenAuth: []
+      - Аутентификация по JWT
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefresh'
+        required: true
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefresh'
+          description: ''
   /api/groups/:
     get:
-      operationId: api_groups_list
+      operationId: groups_list
       description: |-
-        ViewSet для получения/добавления/удаления ссылки из группы,
-        а также изменения информации о группе.
+        Получение групп пользователя.
       parameters:
       - name: limit
         required: false
@@ -74,9 +89,9 @@ paths:
         schema:
           type: string
       tags:
-      - api
+      - Группы
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -85,12 +100,11 @@ paths:
                 $ref: '#/components/schemas/PaginatedUserGroupReadList'
           description: ''
     post:
-      operationId: api_groups_create
+      operationId: groups_create
       description: |-
-        ViewSet для получения/добавления/удаления ссылки из группы,
-        а также изменения информации о группе.
+        Создание группы для ссылок.
       tags:
-      - api
+      - Группы
       requestBody:
         content:
           application/json:
@@ -104,7 +118,7 @@ paths:
               $ref: '#/components/schemas/UserGroupWrite'
         required: true
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       responses:
         '201':
           content:
@@ -114,10 +128,9 @@ paths:
           description: ''
   /api/groups/{id}/:
     get:
-      operationId: api_groups_retrieve
+      operationId: groups_retrieve
       description: |-
-        ViewSet для получения/добавления/удаления ссылки из группы,
-        а также изменения информации о группе.
+        Получение информации о конкертной группе ссылок пользователя.
       parameters:
       - in: path
         name: id
@@ -125,9 +138,9 @@ paths:
           type: string
         required: true
       tags:
-      - api
+      - Группы
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -136,10 +149,9 @@ paths:
                 $ref: '#/components/schemas/UserGroupRead'
           description: ''
     put:
-      operationId: api_groups_update
+      operationId: groups_update
       description: |-
-        ViewSet для получения/добавления/удаления ссылки из группы,
-        а также изменения информации о группе.
+        Изменение группы.
       parameters:
       - in: path
         name: id
@@ -147,7 +159,7 @@ paths:
           type: string
         required: true
       tags:
-      - api
+      - Группы
       requestBody:
         content:
           application/json:
@@ -161,7 +173,7 @@ paths:
               $ref: '#/components/schemas/UserGroupWrite'
         required: true
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -170,10 +182,9 @@ paths:
                 $ref: '#/components/schemas/UserGroupWrite'
           description: ''
     patch:
-      operationId: api_groups_partial_update
+      operationId: groups_partial_update
       description: |-
-        ViewSet для получения/добавления/удаления ссылки из группы,
-        а также изменения информации о группе.
+        Изменение группы.
       parameters:
       - in: path
         name: id
@@ -181,7 +192,7 @@ paths:
           type: string
         required: true
       tags:
-      - api
+      - Группы
       requestBody:
         content:
           application/json:
@@ -194,7 +205,7 @@ paths:
             schema:
               $ref: '#/components/schemas/PatchedUserGroupWrite'
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -203,10 +214,9 @@ paths:
                 $ref: '#/components/schemas/UserGroupWrite'
           description: ''
     delete:
-      operationId: api_groups_destroy
+      operationId: groups_destroy
       description: |-
-        ViewSet для получения/добавления/удаления ссылки из группы,
-        а также изменения информации о группе.
+        Удаление группы.
       parameters:
       - in: path
         name: id
@@ -214,19 +224,17 @@ paths:
           type: string
         required: true
       tags:
-      - api
+      - Группы
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       responses:
         '204':
           description: No response body
   /api/links/:
     get:
-      operationId: api_links_list
+      operationId: links_list
       description: |-
-        ViewSet для действий с короткой ссылкой
-        (создание, изменение, удаление,
-        получение всех ссылок и оригинальной ссылки)
+        Показ коротких ссылок пользователя с возможностью фильтровать по группе.
       parameters:
       - name: limit
         required: false
@@ -253,9 +261,9 @@ paths:
         schema:
           type: string
       tags:
-      - api
+      - Короткие ссылки
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -264,13 +272,12 @@ paths:
                 $ref: '#/components/schemas/PaginatedShortLinkReadList'
           description: ''
     post:
-      operationId: api_links_create
+      operationId: links_create
       description: |-
-        ViewSet для действий с короткой ссылкой
-        (создание, изменение, удаление,
-        получение всех ссылок и оригинальной ссылки)
+        Создание короткой ссылки для неавторизованных и других пользователей. 
+        Есть возможность добавить свой алиас, а также добавить ссылку в группу авторизованного пользователя.
       tags:
-      - api
+      - Короткие ссылки
       requestBody:
         content:
           application/json:
@@ -284,7 +291,7 @@ paths:
               $ref: '#/components/schemas/ShortLinkWrite'
         required: true
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       responses:
         '201':
           content:
@@ -294,11 +301,9 @@ paths:
           description: ''
   /api/links/{short}/:
     get:
-      operationId: api_links_retrieve
+      operationId: links_retrieve
       description: |-
-        ViewSet для действий с короткой ссылкой
-        (создание, изменение, удаление,
-        получение всех ссылок и оригинальной ссылки)
+        Получение полной ссылки по её short коду.
       parameters:
       - in: path
         name: short
@@ -307,9 +312,9 @@ paths:
           title: Короткий код ссылки
         required: true
       tags:
-      - api
+      - Короткие ссылки
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -318,11 +323,9 @@ paths:
                 $ref: '#/components/schemas/ShortLinkRead'
           description: ''
     put:
-      operationId: api_links_update
+      operationId: links_update
       description: |-
-        ViewSet для действий с короткой ссылкой
-        (создание, изменение, удаление,
-        получение всех ссылок и оригинальной ссылки)
+        Изменение статуса ссылки (можно отключить из выдачи), а также удаление/смена группы.
       parameters:
       - in: path
         name: short
@@ -330,7 +333,7 @@ paths:
           type: string
         required: true
       tags:
-      - api
+      - Короткие ссылки
       requestBody:
         content:
           application/json:
@@ -343,7 +346,7 @@ paths:
             schema:
               $ref: '#/components/schemas/ShortLinkEdit'
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -352,11 +355,9 @@ paths:
                 $ref: '#/components/schemas/ShortLinkEdit'
           description: ''
     patch:
-      operationId: api_links_partial_update
+      operationId: links_partial_update
       description: |-
-        ViewSet для действий с короткой ссылкой
-        (создание, изменение, удаление,
-        получение всех ссылок и оригинальной ссылки)
+        Изменение статуса ссылки (можно отключить из выдачи), а также удаление/смена группы.
       parameters:
       - in: path
         name: short
@@ -364,7 +365,7 @@ paths:
           type: string
         required: true
       tags:
-      - api
+      - Короткие ссылки
       requestBody:
         content:
           application/json:
@@ -377,7 +378,7 @@ paths:
             schema:
               $ref: '#/components/schemas/PatchedShortLinkEdit'
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -386,11 +387,9 @@ paths:
                 $ref: '#/components/schemas/ShortLinkEdit'
           description: ''
     delete:
-      operationId: api_links_destroy
+      operationId: links_destroy
       description: |-
-        ViewSet для действий с короткой ссылкой
-        (создание, изменение, удаление,
-        получение всех ссылок и оригинальной ссылки)
+        Удаление ссылки.
       parameters:
       - in: path
         name: short
@@ -398,19 +397,19 @@ paths:
           type: string
         required: true
       tags:
-      - api
+      - Короткие ссылки
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       responses:
         '204':
           description: No response body
   /api/users/:
     get:
-      operationId: api_users_list
+      operationId: users_list
       tags:
-      - api
+      - Пользователи
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -421,9 +420,9 @@ paths:
                   $ref: '#/components/schemas/User'
           description: ''
     post:
-      operationId: api_users_create
+      operationId: users_create
       tags:
-      - api
+      - Пользователи
       requestBody:
         content:
           application/json:
@@ -437,7 +436,7 @@ paths:
               $ref: '#/components/schemas/UserCreate'
         required: true
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       - {}
       responses:
         '201':
@@ -448,7 +447,7 @@ paths:
           description: ''
   /api/users/{id}/:
     get:
-      operationId: api_users_retrieve
+      operationId: users_retrieve
       parameters:
       - in: path
         name: id
@@ -457,9 +456,9 @@ paths:
         description: A unique integer value identifying this пользователь.
         required: true
       tags:
-      - api
+      - Пользователи
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -468,7 +467,7 @@ paths:
                 $ref: '#/components/schemas/User'
           description: ''
     put:
-      operationId: api_users_update
+      operationId: users_update
       parameters:
       - in: path
         name: id
@@ -477,7 +476,7 @@ paths:
         description: A unique integer value identifying this пользователь.
         required: true
       tags:
-      - api
+      - Пользователи
       requestBody:
         content:
           application/json:
@@ -490,7 +489,7 @@ paths:
             schema:
               $ref: '#/components/schemas/User'
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -499,7 +498,7 @@ paths:
                 $ref: '#/components/schemas/User'
           description: ''
     patch:
-      operationId: api_users_partial_update
+      operationId: users_partial_update
       parameters:
       - in: path
         name: id
@@ -508,7 +507,7 @@ paths:
         description: A unique integer value identifying this пользователь.
         required: true
       tags:
-      - api
+      - Пользователи
       requestBody:
         content:
           application/json:
@@ -521,7 +520,7 @@ paths:
             schema:
               $ref: '#/components/schemas/PatchedUser'
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -530,7 +529,7 @@ paths:
                 $ref: '#/components/schemas/User'
           description: ''
     delete:
-      operationId: api_users_destroy
+      operationId: users_destroy
       parameters:
       - in: path
         name: id
@@ -539,17 +538,17 @@ paths:
         description: A unique integer value identifying this пользователь.
         required: true
       tags:
-      - api
+      - Пользователи
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       responses:
         '204':
           description: No response body
   /api/users/activation/:
     post:
-      operationId: api_users_activation_create
+      operationId: users_activation_create
       tags:
-      - api
+      - Пользователи
       requestBody:
         content:
           application/json:
@@ -563,7 +562,7 @@ paths:
               $ref: '#/components/schemas/Activation'
         required: true
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       - {}
       responses:
         '200':
@@ -574,11 +573,11 @@ paths:
           description: ''
   /api/users/me/:
     get:
-      operationId: api_users_me_retrieve
+      operationId: users_me_retrieve
       tags:
-      - api
+      - Пользователи
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -587,9 +586,9 @@ paths:
                 $ref: '#/components/schemas/User'
           description: ''
     put:
-      operationId: api_users_me_update
+      operationId: users_me_update
       tags:
-      - api
+      - Пользователи
       requestBody:
         content:
           application/json:
@@ -602,7 +601,7 @@ paths:
             schema:
               $ref: '#/components/schemas/User'
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -611,9 +610,9 @@ paths:
                 $ref: '#/components/schemas/User'
           description: ''
     patch:
-      operationId: api_users_me_partial_update
+      operationId: users_me_partial_update
       tags:
-      - api
+      - Пользователи
       requestBody:
         content:
           application/json:
@@ -626,7 +625,7 @@ paths:
             schema:
               $ref: '#/components/schemas/PatchedUser'
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -635,19 +634,19 @@ paths:
                 $ref: '#/components/schemas/User'
           description: ''
     delete:
-      operationId: api_users_me_destroy
+      operationId: users_me_destroy
       tags:
-      - api
+      - Пользователи
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       responses:
         '204':
           description: No response body
   /api/users/resend_activation/:
     post:
-      operationId: api_users_resend_activation_create
+      operationId: users_resend_activation_create
       tags:
-      - api
+      - Пользователи
       requestBody:
         content:
           application/json:
@@ -661,7 +660,7 @@ paths:
               $ref: '#/components/schemas/SendEmailReset'
         required: true
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       - {}
       responses:
         '200':
@@ -672,9 +671,9 @@ paths:
           description: ''
   /api/users/reset_password/:
     post:
-      operationId: api_users_reset_password_create
+      operationId: users_reset_password_create
       tags:
-      - api
+      - Пользователи
       requestBody:
         content:
           application/json:
@@ -688,7 +687,7 @@ paths:
               $ref: '#/components/schemas/SendEmailReset'
         required: true
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       - {}
       responses:
         '200':
@@ -699,9 +698,9 @@ paths:
           description: ''
   /api/users/reset_password_confirm/:
     post:
-      operationId: api_users_reset_password_confirm_create
+      operationId: users_reset_password_confirm_create
       tags:
-      - api
+      - Пользователи
       requestBody:
         content:
           application/json:
@@ -715,7 +714,7 @@ paths:
               $ref: '#/components/schemas/PasswordResetConfirmRetype'
         required: true
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       - {}
       responses:
         '200':
@@ -726,9 +725,9 @@ paths:
           description: ''
   /api/users/reset_username/:
     post:
-      operationId: api_users_reset_username_create
+      operationId: users_reset_username_create
       tags:
-      - api
+      - Пользователи
       requestBody:
         content:
           application/json:
@@ -742,7 +741,7 @@ paths:
               $ref: '#/components/schemas/SendEmailReset'
         required: true
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       - {}
       responses:
         '200':
@@ -753,9 +752,9 @@ paths:
           description: ''
   /api/users/reset_username_confirm/:
     post:
-      operationId: api_users_reset_username_confirm_create
+      operationId: users_reset_username_confirm_create
       tags:
-      - api
+      - Пользователи
       requestBody:
         content:
           application/json:
@@ -769,7 +768,7 @@ paths:
               $ref: '#/components/schemas/UsernameResetConfirm'
         required: true
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       - {}
       responses:
         '200':
@@ -780,9 +779,9 @@ paths:
           description: ''
   /api/users/set_password/:
     post:
-      operationId: api_users_set_password_create
+      operationId: users_set_password_create
       tags:
-      - api
+      - Пользователи
       requestBody:
         content:
           application/json:
@@ -796,7 +795,7 @@ paths:
               $ref: '#/components/schemas/SetPassword'
         required: true
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -806,9 +805,9 @@ paths:
           description: ''
   /api/users/set_username/:
     post:
-      operationId: api_users_set_username_create
+      operationId: users_set_username_create
       tags:
-      - api
+      - Пользователи
       requestBody:
         content:
           application/json:
@@ -822,7 +821,7 @@ paths:
               $ref: '#/components/schemas/SetUsername'
         required: true
       security:
-      - tokenAuth: []
+      - jwtAuth: []
       responses:
         '200':
           content:
@@ -1045,13 +1044,38 @@ components:
           title: Группа пользователя
       required:
       - original_link
-    TokenCreate:
+    TokenObtainPair:
       type: object
       properties:
-        password:
-          type: string
         username:
           type: string
+          writeOnly: true
+        password:
+          type: string
+          writeOnly: true
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          readOnly: true
+      required:
+      - access
+      - password
+      - refresh
+      - username
+    TokenRefresh:
+      type: object
+      properties:
+        access:
+          type: string
+          readOnly: true
+        refresh:
+          type: string
+          writeOnly: true
+      required:
+      - access
+      - refresh
     User:
       type: object
       properties:
@@ -1151,8 +1175,7 @@ components:
       required:
       - new_username
   securitySchemes:
-    tokenAuth:
-      type: apiKey
-      in: header
-      name: Authorization
-      description: Token-based authentication with required prefix "Token"
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
