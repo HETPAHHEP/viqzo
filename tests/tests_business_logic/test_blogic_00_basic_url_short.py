@@ -2,8 +2,8 @@ import re
 
 import pytest
 
-from backend.links.services.url_short_logic import LinkHash, LinkIDZeroError
 from backend.core.enums import Limits
+from backend.links.services.url_short_logic import LinkHash, LinkIDZeroError
 
 
 class Test00BasicURLShort:
