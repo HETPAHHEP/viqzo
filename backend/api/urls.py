@@ -1,5 +1,6 @@
-from django.urls import include, path
+from django.urls import include, path, re_path
 from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt import views
 
 from .views import ShortLinkViewSet, UserGroupLinkViewSet
 
@@ -13,7 +14,8 @@ router.register(r'links', ShortLinkViewSet, basename='link-actions')
 
 urlpatterns = [
     path('', include('djoser.urls')),
-    path('auth/', include('djoser.urls.jwt')),
+    re_path(r"^auth/jwt/create/?", views.TokenObtainPairView.as_view(), name="jwt-create"),
+    re_path(r"^auth/jwt/refresh/?", views.TokenRefreshView.as_view(), name="jwt-refresh"),
 ]
 
 urlpatterns += router.urls
