@@ -14,8 +14,16 @@ router.register(r'links', ShortLinkViewSet, basename='link-actions')
 
 urlpatterns = [
     path('', include('djoser.urls')),
-    re_path(r"^auth/jwt/create/?", views.TokenObtainPairView.as_view(), name="jwt-create"),
-    re_path(r"^auth/jwt/refresh/?", views.TokenRefreshView.as_view(), name="jwt-refresh"),
+
+    # AUTH JWT
+    re_path(
+        r"^auth/jwt/create/?",
+        views.TokenObtainPairView.as_view(), name="jwt-create"
+    ),
+    re_path(
+        r"^auth/jwt/refresh/?",
+        views.TokenRefreshView.as_view(), name="jwt-refresh"
+    ),
 ]
 
 urlpatterns += router.urls
