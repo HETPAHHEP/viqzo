@@ -34,6 +34,7 @@ def user2(django_user_model):
 
 @pytest.fixture
 def token_user_superuser(user_superuser):
+    # FOR TOKEN AUTH
     token = Token.objects.get_or_create(user=user_superuser)
     return {
         'access': str(token),
@@ -42,6 +43,7 @@ def token_user_superuser(user_superuser):
 
 @pytest.fixture
 def user_superuser_client(token_user_superuser):
+    # FOR TOKEN AUTH
     client = APIClient()
     token = token_user_superuser["access"][9:49]
     client.credentials(
