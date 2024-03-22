@@ -62,7 +62,7 @@ REST_FRAMEWORK.update(
 SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(days=10),
     'AUTH_HEADER_TYPES': ('Bearer',),
-    'SIGNING_KEY': os.getenv('JWT_SECRET_KEY'),
+    'SIGNING_KEY': os.getenv('DJANGO_SECRET_KEY'),
 }
 
 
