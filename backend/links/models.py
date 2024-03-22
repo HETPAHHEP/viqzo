@@ -165,7 +165,7 @@ class ShortLink(models.Model):
         super().save(*args, **kwargs)
 
     def __str__(self):
-        return self.original_link, self.short
+        return f"link: {self.original_link} short: {self.short}"
 
     class Meta:
         verbose_name = _('Короткая ссылка')
