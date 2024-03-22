@@ -170,6 +170,16 @@ REST_FRAMEWORK = {
     ]
 }
 
+
+# SIMPLE JWT SETTINGS
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=3),
+    "SIGNING_KEY": os.getenv('DJANGO_SECRET_KEY')
+}
+
+
 # DJOSER SETTINGS
 
 DJOSER = {
