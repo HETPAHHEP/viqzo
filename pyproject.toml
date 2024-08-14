@@ -44,6 +44,19 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "viqzo.dev-settings"
+pythonpath = "backend"
+norecursedirs = [
+    "env/*",
+    "venv/*"
+]
+addopts = "-vv --lf -p no:cacheprovider"
+testpaths = "tests/"
+python_files = "test_*.py"
+disable_test_id_escaping_and_forfeit_all_rights_to_community_support = true
+
+
 [tool.isort]
 py_version = 312
 line_length = 79
