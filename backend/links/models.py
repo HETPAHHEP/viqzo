@@ -1,56 +1,59 @@
-from django.contrib.auth import get_user_model
-from django.core.validators import MaxLengthValidator, MinLengthValidator
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth import get_user_model
+from django.core.validators import MaxLengthValidator, MinLengthValidator
 from django.utils.translation import gettext_lazy as _
 
 from core.enums import Limits
 
 from . import validators
-from .services.short_links import (check_links_group_constraints,
-                                   full_clean_check_validation_short,
-                                   get_short_code)
-from .services.user_groups import (check_group_constraints,
-                                   full_clean_check_validation_name,
-                                   set_color_for_group)
+from .services.short_links import (
+    get_short_code,
+    check_links_group_constraints,
+    full_clean_check_validation_short,
+)
+from .services.user_groups import (
+    set_color_for_group,
+    check_group_constraints,
+    full_clean_check_validation_name,
+)
+
 
 User = get_user_model()
 
 
 class UserGroup(models.Model):
     """Пользовательская группа со ссылками пользователя"""
+
     name = models.CharField(
         max_length=Limits.MAX_LEN_GROUP_NAME,
-        verbose_name=_('Имя группы'),
+        verbose_name=_("Имя группы"),
     )
     owner = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        verbose_name=_('Владелец группы'),
-        related_name='group_owner',
+        verbose_name=_("Владелец группы"),
+        related_name="group_owner",
     )
     color = models.CharField(
         max_length=7,  # Hex format with '#'
-        validators=[
-            validators.HexColorValidator
-        ],
-        default='',
-        verbose_name=_('Цвет'),
+        validators=[validators.HexColorValidator],
+        default="",
+        verbose_name=_("Цвет"),
     )
     created_at = models.DateTimeField(
-        auto_now_add=True,
-        verbose_name=_('Дата создания')
+        auto_now_add=True, verbose_name=_("Дата создания")
     )
 
     class Meta:
-        verbose_name = _('Группа ссылок')
-        verbose_name_plural = _('Группы ссылок')
-        db_table = 'links_user_group'
+        verbose_name = _("Группа ссылок")
+        verbose_name_plural = _("Группы ссылок")
+        db_table = "links_user_group"
         constraints = [
             models.UniqueConstraint(
-                name='unique_name_per_owner',
-                fields=['name', 'owner'],
-                violation_error_message=_('Такая группа уже существует.')
+                name="unique_name_per_owner",
+                fields=["name", "owner"],
+                violation_error_message=_("Такая группа уже существует."),
             )
         ]
 
@@ -80,57 +83,50 @@ class UserGroup(models.Model):
 
 class ShortLink(models.Model):
     """Модель для коротких ссылок"""
+
     original_link = models.URLField(
         max_length=Limits.MAX_LEN_ORIGINAL_LINK,
-        verbose_name=_('Оригинальная ссылка'),
+        verbose_name=_("Оригинальная ссылка"),
     )
     short = models.CharField(
         max_length=Limits.MAX_LEN_LINK_SHORT_CODE,
         unique=True,
         db_index=True,
-        verbose_name=_('Короткий код ссылки'),
+        verbose_name=_("Короткий код ссылки"),
         validators=[
             validators.ShortCodeValidator,
-            MinLengthValidator(
-                limit_value=Limits.MIN_LEN_LINK_SHORT_CODE
-            ),
-            MaxLengthValidator(
-                limit_value=Limits.MAX_LEN_LINK_SHORT_CODE
-            )
-        ]
+            MinLengthValidator(limit_value=Limits.MIN_LEN_LINK_SHORT_CODE),
+            MaxLengthValidator(limit_value=Limits.MAX_LEN_LINK_SHORT_CODE),
+        ],
     )
     created_at = models.DateTimeField(
         auto_now_add=True,
-        verbose_name=_('Дата создания'),
+        verbose_name=_("Дата создания"),
         editable=False,
     )
     clicks_count = models.PositiveIntegerField(
-        default=0,
-        verbose_name=_('Переходов по ссылке')
+        default=0, verbose_name=_("Переходов по ссылке")
     )
     last_clicked_at = models.DateTimeField(
-        null=True,
-        blank=True,
-        verbose_name=_('Последнее время клика')
+        null=True, blank=True, verbose_name=_("Последнее время клика")
     )
     is_active = models.BooleanField(
-        default=True,
-        verbose_name=_('Активна ли ссылка?')
+        default=True, verbose_name=_("Активна ли ссылка?")
     )
     owner = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        verbose_name=_('Владелец короткой ссылки'),
-        related_name='link_owner',
+        verbose_name=_("Владелец короткой ссылки"),
+        related_name="link_owner",
         blank=True,
         null=True,
     )
     group = models.ForeignKey(
         UserGroup,
-        db_column='group',
+        db_column="group",
         on_delete=models.SET_NULL,
-        verbose_name=_('Группа пользователя'),
-        related_name='group_links',
+        verbose_name=_("Группа пользователя"),
+        related_name="group_links",
         blank=True,
         null=True,
     )
@@ -152,7 +148,7 @@ class ShortLink(models.Model):
         if not self.short:
             self.short = self.set_short()
 
-        if 'clean' in dir(self):
+        if "clean" in dir(self):
             self.try_full_clean()
 
         if self.pk:
@@ -168,9 +164,9 @@ class ShortLink(models.Model):
         return f"link: {self.original_link} short: {self.short}"
 
     class Meta:
-        verbose_name = _('Короткая ссылка')
-        verbose_name_plural = _('Короткие ссылки')
-        db_table = 'links_short_link'
+        verbose_name = _("Короткая ссылка")
+        verbose_name_plural = _("Короткие ссылки")
+        db_table = "links_short_link"
 
 
 # КАМПАНИИ ДЛЯ ГРУПП. ПОКА НЕ РЕАЛИЗОВАНЫ ИЗ-ЗА СОМНЕНИЯ В НЕОБХОДИМОСТИ

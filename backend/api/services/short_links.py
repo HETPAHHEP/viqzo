@@ -5,29 +5,28 @@ from links.models import ShortLink
 
 
 def validate_alias(data):
-    alias = data.get('alias')
+    alias = data.get("alias")
 
-    if alias:
-
-        if ShortLink.objects.filter(short=alias).exists():
-            raise ValidationError({
-                'alias_error': _('Данный код для ссылки уже занят.')
-            })
+    if alias and ShortLink.objects.filter(short=alias).exists():
+        raise ValidationError(
+            {"alias_error": _("Данный код для ссылки уже занят.")}
+        )
 
     return data
 
 
 def validate_group_for_link(data, user):
     """Проверка условий для изменения ссылки"""
-    group = data.get('group')
+    group = data.get("group")
 
-    if group:
-        if group.owner != user:
-            raise ValidationError({
-                'group_error': _(
+    if group and group.owner != user:
+        raise ValidationError(
+            {
+                "group_error": _(
                     "Нельзя добавить ссылку в группу, "
                     "так как Вы не являетесь её владельцем."
                 )
-            })
+            }
+        )
 
     return data

@@ -1,17 +1,21 @@
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import exceptions, viewsets
-from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.permissions import IsAuthenticated
+from rest_framework import viewsets, exceptions
+from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from django_filters.rest_framework import DjangoFilterBackend
 
 from links.models import ShortLink, UserGroup
 
 from .filters import LinkFilter
-from .paginators import GroupPagination, LinkPagination
+from .paginators import LinkPagination, GroupPagination
 from .permissons import IsOwnerOrAdmin
-from .serializers import (ShortLinkEditSerializer, ShortLinkReadSerializer,
-                          ShortLinkWriteSerializer, UserGroupReadSerializer,
-                          UserGroupWriteSerializer)
+from .serializers import (
+    ShortLinkEditSerializer,
+    ShortLinkReadSerializer,
+    UserGroupReadSerializer,
+    ShortLinkWriteSerializer,
+    UserGroupWriteSerializer,
+)
 
 
 class ShortLinkViewSet(viewsets.ModelViewSet):
@@ -19,25 +23,27 @@ class ShortLinkViewSet(viewsets.ModelViewSet):
     (создание, изменение, удаление,
     получение всех ссылок и оригинальной ссылки)
     """
-    lookup_field = 'short'
+
+    lookup_field = "short"
     pagination_class = LinkPagination
-    filter_backends = [
-        DjangoFilterBackend, SearchFilter, OrderingFilter
-    ]
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = LinkFilter
     ordering_fields = [
-        'group', 'created_at', 'original_link',
-        'clicks_count', 'last_clicked_at',
+        "group",
+        "created_at",
+        "original_link",
+        "clicks_count",
+        "last_clicked_at",
     ]
-    search_fields = ['original_link']
+    search_fields = ["original_link"]
 
     def get_permissions(self):
         """Выдача разрешения в зависимости от действия"""
         permissions = []  # noqa
 
-        if self.action == 'list':
+        if self.action == "list":
             permissions = [IsAuthenticated]
-        if self.action in ('update', 'partial_update', 'destroy'):
+        if self.action in ("update", "partial_update", "destroy"):
             permissions = [IsOwnerOrAdmin]
         return [permission() for permission in permissions]
 
@@ -45,17 +51,19 @@ class ShortLinkViewSet(viewsets.ModelViewSet):
         """Выдача queryset к действию"""
         queryset = ShortLink.objects.all()
 
-        if self.action in ('list', 'update', 'partial_update', 'destroy'):
-            if not self.request.user.is_staff:
-                queryset = queryset.filter(owner=self.request.user)
+        if (
+            self.action in ("list", "update", "partial_update", "destroy")
+            and not self.request.user.is_staff
+        ):
+            queryset = queryset.filter(owner=self.request.user)
 
         return queryset
 
     def get_serializer_class(self):
         """Выдача сериализатор к действию"""
-        if self.action == 'create':
+        if self.action == "create":
             return ShortLinkWriteSerializer
-        if self.action in ('update', 'partial_update'):
+        if self.action in ("update", "partial_update"):
             return ShortLinkEditSerializer
         return ShortLinkReadSerializer
 
@@ -83,22 +91,26 @@ class UserGroupLinkViewSet(viewsets.ModelViewSet):
     """ViewSet для получения/добавления/удаления ссылки из группы,
     а также изменения информации о группе.
     """
+
     pagination_class = GroupPagination
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
-    search_fields = ['name']
-    ordering_fields = ['created_at']
-    ordering = ['-created_at']
+    search_fields = ["name"]
+    ordering_fields = ["created_at"]
+    ordering = ["-created_at"]
 
     actions_without_create = [
-        'list', 'retrieve', 'update',
-        'partial_update', 'destroy'
+        "list",
+        "retrieve",
+        "update",
+        "partial_update",
+        "destroy",
     ]
 
     def get_permissions(self):
         """Выдача разрешения в зависимости от действия"""
         permissions = []  # noqa
 
-        if self.action == 'create':
+        if self.action == "create":
             permissions = [IsAuthenticated]
         if self.action in self.actions_without_create:
             permissions = [IsOwnerOrAdmin]
@@ -110,9 +122,9 @@ class UserGroupLinkViewSet(viewsets.ModelViewSet):
         return UserGroup.objects.all()
 
     def get_serializer_class(self):
-        if self.action in ('create', 'update', 'partial_update'):
+        if self.action in ("create", "update", "partial_update"):
             return UserGroupWriteSerializer
-        if self.action in ('list', 'retrieve'):
+        if self.action in ("list", "retrieve"):
             return UserGroupReadSerializer
 
     def perform_create(self, serializer):

@@ -4,14 +4,16 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('links', '0001_initial'),
+        ("links", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='shortlink',
-            options={'verbose_name': 'Короткая ссылка', 'verbose_name_plural': 'Короткие ссылки'},
+            name="shortlink",
+            options={
+                "verbose_name": "Короткая ссылка",
+                "verbose_name_plural": "Короткие ссылки",
+            },
         ),
     ]

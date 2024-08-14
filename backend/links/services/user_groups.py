@@ -14,30 +14,34 @@ def check_group_constraints(model, user):
     groups_count = model.objects.filter(owner=user).count()
 
     if groups_count >= Limits.MAX_GROUPS_AMOUNT:
-        raise ValidationError({
-            'groups_error': _(
-                'Превышено максимальное количество групп для пользователя.'
-            )
-        })
+        raise ValidationError(
+            {
+                "groups_error": _(
+                    "Превышено максимальное количество групп для пользователя."
+                )
+            }
+        )
 
 
 def set_color_for_group(model, instance) -> str:
     """Добавление цвета к группе"""
 
     # Получаем список цветов, которые уже используются
-    used_colors = model.objects.exclude(
-        pk=instance.pk).values_list('color', flat=True)
+    used_colors = model.objects.exclude(pk=instance.pk).values_list(
+        "color", flat=True
+    )
 
     # Получаем список доступных цветов, которые еще не использованы
     available_colors = [
-        color.color_hex for color in colors_palette
+        color.color_hex
+        for color in colors_palette
         if color.color_hex not in used_colors
     ]
 
     if not available_colors:
-        raise ValidationError({
-            'color_error': _('Нет доступных цветов для группы')
-        })
+        raise ValidationError(
+            {"color_error": _("Нет доступных цветов для группы")}
+        )
 
     return choice(available_colors)
 
@@ -47,15 +51,15 @@ def full_clean_check_validation_name(group):
     try:
         group.full_clean()  # Выполняем проверку перед сохранением
     except DjangoValidationError as e:
-        if 'name' in e.error_dict:
-            raise ValidationError({
-                'name_error': e.error_dict['name']
-            })
+        if "name" in e.error_dict:
+            raise ValidationError({"name_error": e.error_dict["name"]}) from e
 
-        if '__all__' in e.error_dict:
-            raise ValidationError({
-                'name_error': _('Группа с таким именем уже существует.'),
-                'original_error': e.error_dict,
-            })
+        if "__all__" in e.error_dict:
+            raise ValidationError(
+                {
+                    "name_error": _("Группа с таким именем уже существует."),
+                    "original_error": e.error_dict,
+                }
+            ) from e
             # Если другие ошибки, просто передаем исключение дальше
         raise
