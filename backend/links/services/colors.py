@@ -58,7 +58,7 @@ def __view_colors(colors):
     # Рисуем прямоугольник для каждого цвета
     y = 0
     for color in colors:
-        draw.rectangle([(0, y), (image_width, y + 100)], fill=color.color_hex)
+        draw.rectangle(((0, y), (image_width, y + 100)), fill=color.color_hex)
         y += 100
 
         # Сохраняем изображение на диск
