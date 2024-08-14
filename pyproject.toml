@@ -68,12 +68,20 @@ exclude = '''
 
 [tool.mypy]
 warn_unused_configs = false
+exclude = [
+    "tests/"
+]
 
 
 [tool.ruff]
 target-version = "py312"
 line-length = 79
 src = ["backend"]
+exclude = [
+    "tests",
+    "venv",
+
+]
 
 
 [tool.ruff.lint]
