@@ -2,15 +2,14 @@
 
 import django.core.validators
 import django.db.models.deletion
+from django.db import models, migrations
 from django.conf import settings
-from django.db import migrations, models
 
 import core.enums
 import links.validators
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
     dependencies = [
@@ -19,42 +18,172 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='UserGroup',
+            name="UserGroup",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=core.enums.Limits['MAX_LEN_LINK_SHORT_CODE'], verbose_name='Имя группы')),
-                ('color', models.CharField(default='', max_length=7, validators=[links.validators.HexColorValidator], verbose_name='Цвет')),
-                ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')),
-                ('owner', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='group_owner', to=settings.AUTH_USER_MODEL, verbose_name='Владелец группы')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(
+                        max_length=core.enums.Limits[
+                            "MAX_LEN_LINK_SHORT_CODE"
+                        ],
+                        verbose_name="Имя группы",
+                    ),
+                ),
+                (
+                    "color",
+                    models.CharField(
+                        default="",
+                        max_length=7,
+                        validators=[links.validators.HexColorValidator],
+                        verbose_name="Цвет",
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name="Дата создания"
+                    ),
+                ),
+                (
+                    "owner",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="group_owner",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="Владелец группы",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Группа ссылок',
-                'verbose_name_plural': 'Группы ссылок',
-                'db_table': 'links_user_group',
+                "verbose_name": "Группа ссылок",
+                "verbose_name_plural": "Группы ссылок",
+                "db_table": "links_user_group",
             },
         ),
         migrations.CreateModel(
-            name='ShortLink',
+            name="ShortLink",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('original_link', models.URLField(max_length=core.enums.Limits['MAX_LEN_ORIGINAL_LINK'], verbose_name='Оригинальная ссылка')),
-                ('short', models.CharField(db_index=True, max_length=core.enums.Limits['MAX_LEN_LINK_SHORT_CODE'], unique=True, validators=[links.validators.ShortCodeValidator, django.core.validators.MinLengthValidator(limit_value=core.enums.Limits['MIN_LEN_LINK_SHORT_CODE']), django.core.validators.MaxLengthValidator(limit_value=core.enums.Limits['MAX_LEN_LINK_SHORT_CODE'])], verbose_name='Короткий код ссылки')),
-                ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Дата создания')),
-                ('clicks_count', models.PositiveIntegerField(default=0, verbose_name='Переходов по ссылке')),
-                ('last_clicked_at', models.DateTimeField(blank=True, null=True, verbose_name='Последнее время клика')),
-                ('is_active', models.BooleanField(default=True, verbose_name='Активна ли ссылка?')),
-                ('group', models.ForeignKey(blank=True, db_column='group', null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='group_links', to='links.usergroup', verbose_name='Группа пользователя')),
-                ('owner', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='link_owner', to=settings.AUTH_USER_MODEL, verbose_name='Владелец короткой ссылки')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "original_link",
+                    models.URLField(
+                        max_length=core.enums.Limits["MAX_LEN_ORIGINAL_LINK"],
+                        verbose_name="Оригинальная ссылка",
+                    ),
+                ),
+                (
+                    "short",
+                    models.CharField(
+                        db_index=True,
+                        max_length=core.enums.Limits[
+                            "MAX_LEN_LINK_SHORT_CODE"
+                        ],
+                        unique=True,
+                        validators=[
+                            links.validators.ShortCodeValidator,
+                            django.core.validators.MinLengthValidator(
+                                limit_value=core.enums.Limits[
+                                    "MIN_LEN_LINK_SHORT_CODE"
+                                ]
+                            ),
+                            django.core.validators.MaxLengthValidator(
+                                limit_value=core.enums.Limits[
+                                    "MAX_LEN_LINK_SHORT_CODE"
+                                ]
+                            ),
+                        ],
+                        verbose_name="Короткий код ссылки",
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name="Дата создания"
+                    ),
+                ),
+                (
+                    "clicks_count",
+                    models.PositiveIntegerField(
+                        default=0, verbose_name="Переходов по ссылке"
+                    ),
+                ),
+                (
+                    "last_clicked_at",
+                    models.DateTimeField(
+                        blank=True,
+                        null=True,
+                        verbose_name="Последнее время клика",
+                    ),
+                ),
+                (
+                    "is_active",
+                    models.BooleanField(
+                        default=True, verbose_name="Активна ли ссылка?"
+                    ),
+                ),
+                (
+                    "group",
+                    models.ForeignKey(
+                        blank=True,
+                        db_column="group",
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="group_links",
+                        to="links.usergroup",
+                        verbose_name="Группа пользователя",
+                    ),
+                ),
+                (
+                    "owner",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="link_owner",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="Владелец короткой ссылки",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Короткая ссылка',
-                'verbose_name_plural': 'Короткие ссылки',
-                'db_table': 'links_short_link',
-                'ordering': ['original_link', 'short', 'created_at', 'clicks_count', 'last_clicked_at', 'is_active', 'owner', 'group'],
+                "verbose_name": "Короткая ссылка",
+                "verbose_name_plural": "Короткие ссылки",
+                "db_table": "links_short_link",
+                "ordering": [
+                    "original_link",
+                    "short",
+                    "created_at",
+                    "clicks_count",
+                    "last_clicked_at",
+                    "is_active",
+                    "owner",
+                    "group",
+                ],
             },
         ),
         migrations.AddConstraint(
-            model_name='usergroup',
-            constraint=models.UniqueConstraint(fields=('name', 'owner'), name='unique_name_per_owner', violation_error_message='Такая группа уже существует.'),
+            model_name="usergroup",
+            constraint=models.UniqueConstraint(
+                fields=("name", "owner"),
+                name="unique_name_per_owner",
+                violation_error_message="Такая группа уже существует.",
+            ),
         ),
     ]

@@ -1,34 +1,34 @@
 from http import HTTPStatus
 
 import pytest
-from rest_framework.authtoken.models import Token
 from rest_framework.test import APIClient
+from rest_framework.authtoken.models import Token
 
 
 @pytest.fixture
 def user_superuser(django_user_model):
     return django_user_model.objects.create_superuser(
-        username='TestSuperuser',
-        email='testsuperuser@viqzo.fake',
-        password='123456789',
+        username="TestSuperuser",
+        email="testsuperuser@viqzo.fake",
+        password="123456789",
     )
 
 
 @pytest.fixture
 def user(django_user_model):
     return django_user_model.objects.create_user(
-        username='TestUser',
-        email='testuser@viqzo.fake',
-        password='123456789',
+        username="TestUser",
+        email="testuser@viqzo.fake",
+        password="123456789",
     )
 
 
 @pytest.fixture
 def user2(django_user_model):
     return django_user_model.objects.create_user(
-        username='TestUser2',
-        email='testuser2@viqzo.fake',
-        password='123456789',
+        username="TestUser2",
+        email="testuser2@viqzo.fake",
+        password="123456789",
     )
 
 
@@ -37,7 +37,7 @@ def token_user_superuser(user_superuser):
     # FOR TOKEN AUTH
     token = Token.objects.get_or_create(user=user_superuser)
     return {
-        'access': str(token),
+        "access": str(token),
     }
 
 
@@ -46,12 +46,10 @@ def user_superuser_client(token_user_superuser):
     # FOR TOKEN AUTH
     client = APIClient()
     token = token_user_superuser["access"][9:49]
-    client.credentials(
-        HTTP_AUTHORIZATION=f'Token {token}'
-    )
+    client.credentials(HTTP_AUTHORIZATION=f"Token {token}")
 
     # Проверка входа
-    response = client.get('/api/groups/')
+    response = client.get("/api/groups/")
     assert response.status_code == HTTPStatus.OK
 
     return client
@@ -69,6 +67,7 @@ def user_client2(user2):
     client = APIClient()
     client.force_authenticate(user=user2)
     return client
+
 
 #
 # @pytest.fixture

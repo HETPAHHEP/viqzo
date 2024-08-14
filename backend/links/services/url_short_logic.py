@@ -15,8 +15,9 @@ class LinkHash:
     def __init__(self):
         # перемешанный алфавит с 0-9 и английскими буквами
         # нижнего и верхнего регистра.
-        self.alphabet = \
-            '0GTWYahl4C1Dq2evKiNPJdwfLxAsH9t8E5Z3RISyUuzQVk7rjFn6mpgbBXOcoM'
+        self.alphabet = (
+            "0GTWYahl4C1Dq2evKiNPJdwfLxAsH9t8E5Z3RISyUuzQVk7rjFn6mpgbBXOcoM"
+        )
         self.base_len = len(self.alphabet)
         self.code_fix_len = Limits.BASIC_LEN_SHORT_CODE
 
@@ -40,14 +41,14 @@ class LinkHash:
         if link_id <= 0:
             raise LinkIDZeroError
 
-        short_code = ''
+        short_code = ""
 
         while link_id > 0:
             link_id, remainder = divmod(link_id, self.base_len)
             short_code += self.alphabet[remainder]
 
         # Укорачиваем код для использования в ссылке
-        return short_code[::-1][:self.code_fix_len:]
+        return short_code[::-1][: self.code_fix_len :]
 
     def get_short_code(self) -> str:
         """Входная точка для генерации кода"""
@@ -57,7 +58,7 @@ class LinkHash:
         return short_code
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     # for manual test
     hash_for_link = LinkHash()
     print(hash_for_link.get_short_code())

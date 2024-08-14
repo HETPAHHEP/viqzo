@@ -18,15 +18,13 @@ class TelegramBotHandler(Handler):
             messages_amount = record_len // self.msg_limit + 1
 
             for numb in range(0, messages_amount):
-                format_message = self.format(
-                    record)[numb * self.msg_limit: (numb + 1) * self.msg_limit]
+                format_message = self.format(record)[
+                    numb * self.msg_limit : (numb + 1) * self.msg_limit
+                ]
 
                 bot.send_message(
                     self.chat_id,
-                    f'🫨 {numb + 1}/{messages_amount}\n' + format_message
+                    f"🫨 {numb + 1}/{messages_amount}\n" + format_message,
                 )
         else:
-            bot.send_message(
-                self.chat_id,
-                self.format(record)
-            )
+            bot.send_message(self.chat_id, self.format(record))
