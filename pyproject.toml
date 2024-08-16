@@ -93,6 +93,7 @@ src = ["backend"]
 exclude = [
     "tests",
     "venv",
+    "migrations"
 
 ]
 
