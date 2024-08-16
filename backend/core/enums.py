@@ -22,3 +22,5 @@ class Limits(IntEnum):
     MAX_GROUPS_CAMPAIGN_AMOUNT = 10
     # Максимальное количество компаний
     MAX_CAMPAIGNS_AMOUNT = 10
+    # Максимальная длина названия цвета
+    MAX_LEN_COLOR_NAME = 70

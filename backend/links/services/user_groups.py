@@ -1,12 +1,11 @@
-from random import choice
-
 from django.core.exceptions import ValidationError as DjangoValidationError
 from django.utils.translation import gettext_lazy as _
 from rest_framework.validators import ValidationError
 
 from core.enums import Limits
 
-from .colors import colors_palette
+
+# from .colors import colors_palette
 
 
 def check_group_constraints(model, user):
@@ -23,27 +22,27 @@ def check_group_constraints(model, user):
         )
 
 
-def set_color_for_group(model, instance) -> str:
-    """Добавление цвета к группе"""
-
-    # Получаем список цветов, которые уже используются
-    used_colors = model.objects.exclude(pk=instance.pk).values_list(
-        "color", flat=True
-    )
-
-    # Получаем список доступных цветов, которые еще не использованы
-    available_colors = [
-        color.color_hex
-        for color in colors_palette
-        if color.color_hex not in used_colors
-    ]
-
-    if not available_colors:
-        raise ValidationError(
-            {"color_error": _("Нет доступных цветов для группы")}
-        )
-
-    return choice(available_colors)
+# def set_color_for_group(model, instance) -> str:
+#     """Добавление цвета к группе"""
+#
+#     # Получаем список цветов, которые уже используются
+#     used_colors = model.objects.exclude(pk=instance.pk).values_list(
+#         "color", flat=True
+#     )
+#
+#     # Получаем список доступных цветов, которые еще не использованы
+#     available_colors = [
+#         color.color_hex
+#         for color in colors_palette
+#         if color.color_hex not in used_colors
+#     ]
+#
+#     if not available_colors:
+#         raise ValidationError(
+#             {"color_error": _("Нет доступных цветов для группы")}
+#         )
+#
+#     return choice(available_colors)
 
 
 def full_clean_check_validation_name(group):

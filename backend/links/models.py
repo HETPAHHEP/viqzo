@@ -13,13 +13,34 @@ from .services.short_links import (
     full_clean_check_validation_short,
 )
 from .services.user_groups import (
-    set_color_for_group,
     check_group_constraints,
     full_clean_check_validation_name,
 )
 
 
 User = get_user_model()
+
+
+class Color(models.Model):
+    """Цвет для группы или кампании"""
+
+    name = models.CharField(
+        max_length=Limits.MAX_LEN_COLOR_NAME, verbose_name=_("Имя цвета")
+    )
+    color_hex = models.CharField(
+        max_length=7,  # Hex format with '#'
+        unique=True,
+        validators=[validators.HexColorValidator],
+        verbose_name=_("HEX Цвета"),
+    )
+
+    class Meta:
+        verbose_name = _("Цвет")
+        verbose_name_plural = _("Цвета")
+        db_table = "links_color"
+
+    def __str__(self):
+        return self.color_hex
 
 
 class UserGroup(models.Model):
@@ -35,11 +56,11 @@ class UserGroup(models.Model):
         verbose_name=_("Владелец группы"),
         related_name="group_owner",
     )
-    color = models.CharField(
-        max_length=7,  # Hex format with '#'
-        validators=[validators.HexColorValidator],
-        default="",
-        verbose_name=_("Цвет"),
+    color = models.ForeignKey(
+        Color,
+        on_delete=models.PROTECT,
+        verbose_name=_("Цвет группы"),
+        related_name="group_color",
     )
     created_at = models.DateTimeField(
         auto_now_add=True, verbose_name=_("Дата создания")
@@ -66,7 +87,7 @@ class UserGroup(models.Model):
 
     def set_color(self):
         """Поставить цвет группе"""
-        return set_color_for_group(UserGroup, self)
+        # return set_color_for_group(UserGroup, self)
 
     def try_full_clean(self):
         """Запустить проверку полей модели"""
