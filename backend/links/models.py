@@ -30,7 +30,11 @@ class Color(models.Model):
     color_hex = models.CharField(
         max_length=7,  # Hex format with '#'
         unique=True,
-        validators=[validators.HexColorValidator],
+        validators=[
+            MinLengthValidator(limit_value=4),
+            MaxLengthValidator(limit_value=7),
+            validators.HexColorValidator,
+        ],
         verbose_name=_("HEX Цвета"),
     )
 
