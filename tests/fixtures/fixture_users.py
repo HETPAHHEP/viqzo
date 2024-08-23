@@ -2,7 +2,6 @@ from http import HTTPStatus
 
 import pytest
 from rest_framework.test import APIClient
-from rest_framework.authtoken.models import Token
 
 
 @pytest.fixture
@@ -33,29 +32,6 @@ def user2(django_user_model):
 
 
 @pytest.fixture
-def token_user_superuser(user_superuser):
-    # FOR TOKEN AUTH
-    token = Token.objects.get_or_create(user=user_superuser)
-    return {
-        "access": str(token),
-    }
-
-
-@pytest.fixture
-def user_superuser_client(token_user_superuser):
-    # FOR TOKEN AUTH
-    client = APIClient()
-    token = token_user_superuser["access"][9:49]
-    client.credentials(HTTP_AUTHORIZATION=f"Token {token}")
-
-    # Проверка входа
-    response = client.get("/api/groups/")
-    assert response.status_code == HTTPStatus.OK
-
-    return client
-
-
-@pytest.fixture
 def user_client(user):
     client = APIClient()
     client.force_authenticate(user=user)
@@ -69,20 +45,50 @@ def user_client2(user2):
     return client
 
 
+# @pytest.fixture
+# def token_user_superuser(user_superuser):
+#     # FOR TOKEN AUTH
+#     token = Token.objects.get_or_create(user=user_superuser)
+#     return {
+#         "access": str(token),
+#     }
+#
+#
+# @pytest.fixture
+# def user_superuser_client(token_user_superuser):
+#     # FOR TOKEN AUTH
+#     client = APIClient()
+#     token = token_user_superuser["access"][9:49]
+#     client.credentials(HTTP_AUTHORIZATION=f"Bearer {token}")
+#
+#     # Проверка входа
+#     response = client.get("/api/groups/")
+#     assert response.status_code == HTTPStatus.OK
+#
+#     return client
+#
 #
 # @pytest.fixture
 # def token_user(user):
-#     token = Token.objects.create(user=user)
+#     token = Token.objects.get_or_create(user=user)
 #     return {
 #         'access': str(token),
 #     }
 #
 #
 # @pytest.fixture
+# def token_user2(user2):
+#     token = Token.objects.get_or_create(user=user2)
+#     return {
+#         'access': str(token),
+#     }
+#
+
+# @pytest.fixture
 # def user_client(token_user):
 #     client = APIClient()
 #     client.credentials(
-#         HTTP_AUTHORIZATION=f'Token {token_user["access"]}'
+#         HTTP_AUTHORIZATION=f'Bearer {token_user["access"][9:49]}'
 #     )
 #
 #     response = client.get('/api/groups/')
@@ -91,19 +97,13 @@ def user_client2(user2):
 #     return client
 #
 #
-# @pytest.fixture
-# def token_user2(user2):
-#     token = Token.objects.create(user=user2)
-#     return {
-#         'access': str(token),
-#     }
 #
 #
 # @pytest.fixture
 # def user_client2(token_user2):
 #     client = APIClient()
 #     client.credentials(
-#         HTTP_AUTHORIZATION=f'Token {token_user2["access"]}'
+#         HTTP_AUTHORIZATION=f'Bearer {token_user2["access"][9:49]}'
 #     )
 #
 #     response = client.get('/api/groups/')

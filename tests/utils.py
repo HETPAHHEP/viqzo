@@ -9,9 +9,10 @@ def create_short_link(client, valid_original_link) -> str:
 
     response = client.post("/api/links/", data=valid_original_link)
     assert response.status_code == HTTPStatus.CREATED, (
-        "POST-запрос с валидной ссылкой от неавторизованного пользователя "
-        "на api/links/ для создания короткого кода не возвращает ответ "
-        "со статусом 201."
+        f"POST-запрос с валидной ссылкой от неавторизованного пользователя "
+        f"на api/links/ для создания короткого кода не возвращает ответ "
+        f"со статусом 201.\n"
+        f"Детали: {response.data}"
     )
 
     code = response.data.get("short")
@@ -29,8 +30,9 @@ def create_alias_link(client, original_link_with_alias) -> str:
 
     response = client.post("/api/links/", data=original_link_with_alias)
     assert response.status_code == HTTPStatus.CREATED, (
-        "POST-запрос с валидной ссылкой и alias от неавторизованного пользователя "
-        "на api/links/ для создания пользовательского кода не возвращает ответ со статусом 201."
+        f"POST-запрос с валидной ссылкой и alias от неавторизованного пользователя "
+        f"на api/links/ для создания пользовательского кода не возвращает ответ со статусом 201.\n"
+        f"Детали: {response.data}"
     )
 
     code = response.data.get("short")
@@ -49,9 +51,10 @@ def create_usergroup(client, name_for_usergroup) -> int:
     response = client.post("/api/groups/", data=name_for_usergroup)
 
     assert response.status_code == HTTPStatus.CREATED, (
-        "POST-запрос с именем от пользователя "
-        "на api/groups/ для создания группы не возвращает ответ "
-        "со статусом 201."
+        f"POST-запрос с именем от пользователя "
+        f"на api/groups/ для создания группы не возвращает ответ "
+        f"со статусом 201.\n"
+        f"Детали: {response.data}"
     )
 
     group_id = response.data.get("id")
@@ -89,10 +92,11 @@ def create_and_add_short_link_to_group(
         response.status_code == HTTPStatus.CREATED
         and response.data["group"]["id"] == group_id
     ), (
-        "POST-запрос от авторизованного пользователя "
-        "на /api/links/ для создания short ссылки с группой "
-        "не возвращает ответ со статусом 201 "
-        "(пользователь должен иметь возможность создать короткую ссылку со своей группой)."
+        f"POST-запрос от авторизованного пользователя "
+        f"на /api/links/ для создания short ссылки с группой "
+        f"не возвращает ответ со статусом 201 "
+        f"(пользователь должен иметь возможность создать короткую ссылку со своей группой).\n"
+        f"Детали: {response.data}"
     )
 
     short_code = response.data.get("short", None)

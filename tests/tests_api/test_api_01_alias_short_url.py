@@ -14,8 +14,9 @@ class Test01AliasShort:
     ):
         response = client.post("/api/links/", data=original_link_with_alias)
         assert response.status_code == HTTPStatus.CREATED, (
-            "POST-запрос с валидной ссылкой и alias от неавторизованного пользователя "
-            "на api/links/ для создания пользовательского кода не возвращает ответ со статусом 201."
+            f"POST-запрос с валидной ссылкой и alias от неавторизованного пользователя "
+            f"на api/links/ для создания пользовательского кода не возвращает ответ со статусом 201.\n"
+            f"Детали: {response.data}"
         )
 
     def test_01_02_create_alias_link_and_check_idempotency(
@@ -23,22 +24,25 @@ class Test01AliasShort:
     ):
         response = client.post("/api/links/", data=original_link_with_alias)
         assert response.status_code == HTTPStatus.CREATED, (
-            "POST-запрос с валидной ссылкой и alias от неавторизованного пользователя "
-            "на api/links/ для создания пользовательского кода не возвращает ответ со статусом 201."
+            f"POST-запрос с валидной ссылкой и alias от неавторизованного пользователя "
+            f"на api/links/ для создания пользовательского кода не возвращает ответ со статусом 201.\n"
+            f"Детали: {response.data}"
         )
 
         response = client.post("/api/links/", data=original_link_with_alias)
         assert response.status_code == HTTPStatus.BAD_REQUEST, (
-            "POST-запрос с валидной ссылкой и alias от неавторизованного пользователя "
-            "на api/links/ для создания пользовательского кода для уже созданной ссылки "
-            "возвращает ответ со статусом 400 (не дает создать новую ссылку с данным кодом)."
+            f"POST-запрос с валидной ссылкой и alias от неавторизованного пользователя "
+            f"на api/links/ для создания пользовательского кода для уже созданной ссылки "
+            f"возвращает ответ со статусом 400 (не дает создать новую ссылку с данным кодом).\n"
+            f"Детали: {response.data}"
         )
 
         response = client.post("/api/links/", data=original_link_with_alias)
         assert response.status_code == HTTPStatus.BAD_REQUEST, (
-            "POST-запрос с валидной ссылкой и alias от неавторизованного пользователя "
-            "на api/links/ для создания пользовательского кода для уже созданной ссылки "
-            "возвращает ответ со статусом 400 (не дает создать новую ссылку с данным кодом)."
+            f"POST-запрос с валидной ссылкой и alias от неавторизованного пользователя "
+            f"на api/links/ для создания пользовательского кода для уже созданной ссылки "
+            f"возвращает ответ со статусом 400 (не дает создать новую ссылку с данным кодом).\n"
+            f"Детали: {response.data}"
         )
 
     def test_01_03_create_alias_link_with_invalid_original_link(
@@ -46,9 +50,10 @@ class Test01AliasShort:
     ):
         response = client.post("/api/links/", data=invalid_original_link)
         assert response.status_code == HTTPStatus.BAD_REQUEST, (
-            "POST-запрос с невалидной ссылкой и alias от неавторизованного пользователя "
-            "на api/links/ для создания пользовательского кода должен возвращать ответ "
-            "со статусом 400 (короткая ссылка не создается)."
+            f"POST-запрос с невалидной ссылкой и alias от неавторизованного пользователя "
+            f"на api/links/ для создания пользовательского кода должен возвращать ответ "
+            f"со статусом 400 (короткая ссылка не создается).\n"
+            f"Детали: {response.data}"
         )
 
     def test_01_04_create_alias_link_len_restrict_for_original_link(
@@ -56,8 +61,9 @@ class Test01AliasShort:
     ):
         response = client.post("/api/links/", data=very_long_link_with_alias)
         assert response.status_code == HTTPStatus.BAD_REQUEST, (
-            "POST-запрос c длинной ссылкой на api/links/ для создания пользовательского кода "
-            "должен возвращать ошибку со статусом 400 (ограничение по длине ссылки)."
+            f"POST-запрос c длинной ссылкой на api/links/ для создания пользовательского кода "
+            f"должен возвращать ошибку со статусом 400 (ограничение по длине ссылки).\n"
+            f"Детали: {response.data}"
         )
 
     def test_01_04_create_link_with_short_alias(
@@ -65,22 +71,25 @@ class Test01AliasShort:
     ):
         response = client.post("/api/links/", data=very_short_alias)
         assert response.status_code == HTTPStatus.BAD_REQUEST, (
-            "POST-запрос c коротким alias на api/links/ для создания пользовательского кода "
-            "должен возвращать ошибку со статусом 400 (ограничение по длине кода)."
+            f"POST-запрос c коротким alias на api/links/ для создания пользовательского кода "
+            f"должен возвращать ошибку со статусом 400 (ограничение по длине кода).\n"
+            f"Детали: {response.data}"
         )
 
     def test_01_04_create_link_with_long_alias(self, client, very_long_alias):
         response = client.post("/api/links/", data=very_long_alias)
         assert response.status_code == HTTPStatus.BAD_REQUEST, (
-            "POST-запрос c длинным alias на api/links/ для создания пользовательского кода "
-            "должен возвращать ошибку со статусом 400 (ограничение по длине кода)."
+            f"POST-запрос c длинным alias на api/links/ для создания пользовательского кода "
+            f"должен возвращать ошибку со статусом 400 (ограничение по длине кода).\n"
+            f"Детали: {response.data}"
         )
 
     def test_01_05_create_alias_link_without_original_link(self, client):
         response = client.post("/api/links/")
         assert response.status_code == HTTPStatus.BAD_REQUEST, (
-            "POST-запрос без ссылки на api/links/ для создания пользовательского кода "
-            "должен возвращать ошибку со статусом 400 (нужно добавить ссылку для сокращения)."
+            f"POST-запрос без ссылки на api/links/ для создания пользовательского кода "
+            f"должен возвращать ошибку со статусом 400 (нужно добавить ссылку для сокращения).\n"
+            f"Детали: {response.data}"
         )
 
     def test_02_01_get_original_link_by_alias(
@@ -96,7 +105,8 @@ class Test01AliasShort:
             == original_link_with_alias.get("alias")
         ), (
             f"GET-запрос с кодом на api/links/{code}/ для получения полной ссылки "
-            f"не вернул нужную ссылку. "
+            f"не вернул нужную ссылку.\n"
+            f"Детали: {response.data}"
         )
 
     def test_02_02_check_clicks_count_alias_link(
@@ -113,7 +123,8 @@ class Test01AliasShort:
             and response.data.get("clicks_count") == 1
         ), (
             f"GET-запрос с кодом на api/links/{code}/ для получения полной ссылки "
-            f"не вернул нужную ссылку с кликами на неё. "
+            f"не вернул нужную ссылку с кликами на неё.\n"
+            f"Детали: {response.data}"
         )
 
         clicked_at = response.data.get("last_clicked_at")
@@ -129,7 +140,8 @@ class Test01AliasShort:
             and response.data.get("last_clicked_at") != clicked_at
         ), (
             f"GET-запрос с кодом на api/links/{code}/ для получения полной ссылки "
-            f"не посчитал повторно клики на нужную ссылку. "
+            f"не посчитал повторно клики на нужную ссылку.\n"
+            f"Детали: {response.data}"
         )
 
     def test_03_01_create_alias_url_auth(
@@ -140,8 +152,9 @@ class Test01AliasShort:
         )
 
         assert response.status_code == HTTPStatus.CREATED, (
-            "POST-запрос с валидной ссылкой от авторизованного пользователя "
-            "на api/links/ для создания короткого кода не возвращает ответ со статусом 201."
+            f"POST-запрос с валидной ссылкой от авторизованного пользователя "
+            f"на api/links/ для создания короткого кода не возвращает ответ со статусом 201.\n"
+            f"Детали: {response.data}"
         )
 
     def test_04_01_edit_alias_link_active_status_true_after_create(
@@ -164,9 +177,10 @@ class Test01AliasShort:
         assert response.status_code == HTTPStatus.OK and response.data[
             "is_active"
         ] == is_active_status_true_bool.get("is_active"), (
-            "PATCH-запрос от авторизованного пользователя "
-            "на /api/links/ для изменения статуса alias ссылки "
-            "не возвращает ответ со статусом 200 (пользователь может изменить статус)."
+            f"PATCH-запрос от авторизованного пользователя "
+            f"на /api/links/ для изменения статуса alias ссылки "
+            f"не возвращает ответ со статусом 200 (пользователь может изменить статус).\n"
+            f"Детали: {response.data}"
         )
 
         response = user_client.patch(
@@ -176,9 +190,10 @@ class Test01AliasShort:
         assert response.status_code == HTTPStatus.OK and response.data[
             "is_active"
         ] == is_active_status_true_num.get("is_active"), (
-            "PATCH-запрос от авторизованного пользователя "
-            "на /api/links/ для изменения статуса alias ссылки "
-            "не возвращает ответ со статусом 200 (пользователь может изменить статус)."
+            f"PATCH-запрос от авторизованного пользователя "
+            f"на /api/links/ для изменения статуса alias ссылки "
+            f"не возвращает ответ со статусом 200 (пользователь может изменить статус).\n"
+            f"Детали: {response.data}"
         )
 
         response = user_client.patch(
@@ -190,9 +205,10 @@ class Test01AliasShort:
             and type(response.data["is_active"]) == bool
             and response.data["is_active"]
         ), (
-            "PATCH-запрос от авторизованного пользователя "
-            "на /api/links/ для изменения статуса alias ссылки "
-            "не возвращает ответ со статусом 200 (пользователь может изменить статус)."
+            f"PATCH-запрос от авторизованного пользователя "
+            f"на /api/links/ для изменения статуса alias ссылки "
+            f"не возвращает ответ со статусом 200 (пользователь может изменить статус).\n"
+            f"Детали: {response.data}"
         )
 
         response = user_client.patch(
@@ -205,9 +221,10 @@ class Test01AliasShort:
             and type(response.data["is_active"]) == bool
             and response.data["is_active"]
         ), (
-            "PATCH-запрос от авторизованного пользователя "
-            "на /api/links/ для изменения статуса alias ссылки "
-            "не возвращает ответ со статусом 200 (пользователь может изменить статус)."
+            f"PATCH-запрос от авторизованного пользователя "
+            f"на /api/links/ для изменения статуса alias ссылки "
+            f"не возвращает ответ со статусом 200 (пользователь может изменить статус).\n"
+            f"Детали: {response.data}"
         )
 
     def test_04_02_edit_alias_link_active_status_false_after_create(
@@ -232,9 +249,10 @@ class Test01AliasShort:
             and type(response.data["is_active"]) == bool
             and not response.data["is_active"]
         ), (
-            "PATCH-запрос от авторизованного пользователя "
-            "на /api/links/ для изменения статуса alias ссылки "
-            "не возвращает ответ со статусом 200 (пользователь может изменить статус)."
+            f"PATCH-запрос от авторизованного пользователя "
+            f"на /api/links/ для изменения статуса alias ссылки "
+            f"не возвращает ответ со статусом 200 (пользователь может изменить статус).\n"
+            f"Детали: {response.data}"
         )
 
         response = user_client.patch(
@@ -246,9 +264,10 @@ class Test01AliasShort:
             and type(response.data["is_active"]) == bool
             and not response.data["is_active"]
         ), (
-            "PATCH-запрос от авторизованного пользователя "
-            "на /api/links/ для изменения статуса alias ссылки "
-            "не возвращает ответ со статусом 200 (пользователь может изменить статус)."
+            f"PATCH-запрос от авторизованного пользователя "
+            f"на /api/links/ для изменения статуса alias ссылки "
+            f"не возвращает ответ со статусом 200 (пользователь может изменить статус).\n"
+            f"Детали: {response.data}"
         )
 
         response = user_client.patch(
@@ -261,9 +280,10 @@ class Test01AliasShort:
             and type(response.data["is_active"]) == bool
             and not response.data["is_active"]
         ), (
-            "PATCH-запрос от авторизованного пользователя "
-            "на /api/links/ для изменения статуса alias ссылки "
-            "не возвращает ответ со статусом 200 (пользователь может изменить статус)."
+            f"PATCH-запрос от авторизованного пользователя "
+            f"на /api/links/ для изменения статуса alias ссылки "
+            f"не возвращает ответ со статусом 200 (пользователь может изменить статус).\n"
+            f"Детали: {response.data}"
         )
 
         response = user_client.patch(
@@ -276,9 +296,10 @@ class Test01AliasShort:
             and type(response.data["is_active"]) == bool
             and not response.data["is_active"]
         ), (
-            "PATCH-запрос от авторизованного пользователя "
-            "на /api/links/ для изменения статуса alias ссылки "
-            "не возвращает ответ со статусом 200 (пользователь может изменить статус)."
+            f"PATCH-запрос от авторизованного пользователя "
+            f"на /api/links/ для изменения статуса alias ссылки "
+            f"не возвращает ответ со статусом 200 (пользователь может изменить статус).\n"
+            f"Детали: {response.data}"
         )
 
     def test_04_03_edit_alias_link_active_status_with_false_status(
@@ -301,9 +322,10 @@ class Test01AliasShort:
             and type(response.data["is_active"]) == bool
             and not response.data["is_active"]
         ), (
-            "PATCH-запрос от авторизованного пользователя "
-            "на /api/links/ для изменения статуса alias ссылки "
-            "не возвращает ответ со статусом 200 (пользователь может изменить статус)."
+            f"PATCH-запрос от авторизованного пользователя "
+            f"на /api/links/ для изменения статуса alias ссылки "
+            f"не возвращает ответ со статусом 200 (пользователь может изменить статус).\n"
+            f"Детали: {response.data}"
         )
 
         response = user_client.patch(
@@ -315,9 +337,10 @@ class Test01AliasShort:
             and type(response.data["is_active"]) == bool
             and not response.data["is_active"]
         ), (
-            "PATCH-запрос от авторизованного пользователя "
-            "на /api/links/ для изменения статуса alias ссылки "
-            "не возвращает ответ со статусом 200 (пользователь может изменить статус)."
+            f"PATCH-запрос от авторизованного пользователя "
+            f"на /api/links/ для изменения статуса alias ссылки "
+            f"не возвращает ответ со статусом 200 (пользователь может изменить статус).\n"
+            f"Детали: {response.data}"
         )
 
         response = user_client.patch(
@@ -329,9 +352,10 @@ class Test01AliasShort:
             and type(response.data["is_active"]) == bool
             and response.data["is_active"]
         ), (
-            "PATCH-запрос от авторизованного пользователя "
-            "на /api/links/ для изменения статуса alias ссылки "
-            "не возвращает ответ со статусом 200 (пользователь может изменить статус)."
+            f"PATCH-запрос от авторизованного пользователя "
+            f"на /api/links/ для изменения статуса alias ссылки "
+            f"не возвращает ответ со статусом 200 (пользователь может изменить статус).\n"
+            f"Детали: {response.data}"
         )
 
     def test_04_04_edit_not_own_alias_link_active_status(
@@ -351,9 +375,10 @@ class Test01AliasShort:
         )
 
         assert response.status_code == HTTPStatus.NOT_FOUND, (
-            "PATCH-запрос от авторизованного пользователя "
-            "на /api/links/ для изменения статуса чужой alias ссылки "
-            "не возвращает ответ со статусом 404 (пользователь не может изменить статус чужой ссылки)."
+            f"PATCH-запрос от авторизованного пользователя "
+            f"на /api/links/ для изменения статуса чужой alias ссылки "
+            f"не возвращает ответ со статусом 404 (пользователь не может изменить статус чужой ссылки).\n"
+            f"Детали: {response.data}"
         )
 
         response = user_client2.patch(
@@ -361,9 +386,10 @@ class Test01AliasShort:
         )
 
         assert response.status_code == HTTPStatus.NOT_FOUND, (
-            "PATCH-запрос от авторизованного пользователя "
-            "на /api/links/ для изменения статуса чужой alias ссылки "
-            "не возвращает ответ со статусом 404 (пользователь не может изменить статус чужой ссылки)."
+            f"PATCH-запрос от авторизованного пользователя "
+            f"на /api/links/ для изменения статуса чужой alias ссылки "
+            f"не возвращает ответ со статусом 404 (пользователь не может изменить статус чужой ссылки).\n"
+            f"Детали: {response.data}"
         )
 
         response = user_client.patch(
@@ -371,9 +397,10 @@ class Test01AliasShort:
         )
 
         assert response.status_code == HTTPStatus.OK, (
-            "PATCH-запрос от авторизованного пользователя "
-            "на /api/links/ для изменения статуса alias ссылки "
-            "не возвращает ответ со статусом 200 (пользователь не может изменить статус чужой ссылки)."
+            f"PATCH-запрос от авторизованного пользователя "
+            f"на /api/links/ для изменения статуса alias ссылки "
+            f"не возвращает ответ со статусом 200 (пользователь не может изменить статус чужой ссылки).\n"
+            f"Детали: {response.data}"
         )
 
         response = user_client2.patch(
@@ -381,9 +408,10 @@ class Test01AliasShort:
         )
 
         assert response.status_code == HTTPStatus.NOT_FOUND, (
-            "PATCH-запрос от авторизованного пользователя "
-            "на /api/links/ для изменения статуса чужой alias ссылки "
-            "не возвращает ответ со статусом 404 (пользователь не может изменить статус чужой ссылки)."
+            f"PATCH-запрос от авторизованного пользователя "
+            f"на /api/links/ для изменения статуса чужой alias ссылки "
+            f"не возвращает ответ со статусом 404 (пользователь не может изменить статус чужой ссылки).\n"
+            f"Детали: {response.data}"
         )
 
     def test_04_05_check_show_alias_link_after_change_status(
@@ -403,15 +431,17 @@ class Test01AliasShort:
         assert response.status_code == HTTPStatus.OK and response.data[
             "is_active"
         ] == is_active_status_false_bool.get("is_active"), (
-            "PATCH-запрос от авторизованного пользователя "
-            "на /api/links/ для изменения статуса alias ссылки "
-            "не возвращает ответ со статусом 200 (пользователь может изменить статус)."
+            f"PATCH-запрос от авторизованного пользователя "
+            f"на /api/links/ для изменения статуса alias ссылки "
+            f"не возвращает ответ со статусом 200 (пользователь может изменить статус).\n"
+            f"Детали: {response.data}"
         )
 
         response = user_client.get(f"/api/links/{short_code}/")
 
         assert response.status_code == HTTPStatus.NOT_FOUND, (
-            "GET-запрос от авторизованного пользователя "
-            "на /api/links/short_code для получения полной ссылки после изменения статуса на False "
-            "не возвращает ответ со статусом 404 (пользователь может отключить выдачу полной ссылки)."
+            f"GET-запрос от авторизованного пользователя "
+            f"на /api/links/short_code для получения полной ссылки после изменения статуса на False "
+            f"не возвращает ответ со статусом 404 (пользователь может отключить выдачу полной ссылки).\n"
+            f"Детали: {response.data}"
         )
