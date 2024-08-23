@@ -13,6 +13,7 @@ from .services.short_links import (
     full_clean_check_validation_short,
 )
 from .services.user_groups import (
+    set_color_for_group,
     check_group_constraints,
     full_clean_check_validation_name,
 )
@@ -91,14 +92,14 @@ class UserGroup(models.Model):
 
     def set_color(self):
         """Поставить цвет группе"""
-        # return set_color_for_group(UserGroup, self)
+        return set_color_for_group(UserGroup, self, Color)
 
     def try_full_clean(self):
         """Запустить проверку полей модели"""
         return full_clean_check_validation_name(self)
 
     def save(self, *args, **kwargs):
-        if not self.color:
+        if self.color_id is None:  # Проверяем, установлен ли цвет
             self.color = self.set_color()
 
         self.try_full_clean()
