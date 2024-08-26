@@ -24,12 +24,6 @@ def check_group_constraints(model, user):
 
 def set_color_for_group(group_model, instance, color_group) -> str:
     """Добавление цвета к группе"""
-
-    # Получаем список цветов, которые уже используются
-    used_colors = group_model.objects.exclude(pk=instance.pk).values_list(
-        "color", flat=True
-    )
-
     if not color_group.objects.exists():
         raise APIException(
             {
@@ -40,6 +34,10 @@ def set_color_for_group(group_model, instance, color_group) -> str:
             }
         )
 
+    # Получаем список цветов, которые уже используются
+    used_colors = group_model.objects.exclude(pk=instance.pk).values_list(
+        "color", flat=True
+    )
     colors_palette = list(color_group.objects.exclude(pk__in=used_colors))
 
     if not colors_palette:
