@@ -6,6 +6,7 @@ from tests import utils
 
 
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.usefixtures('init_colors')
 class Test03UserGroup:
     """Тестирование API для взаимодействия с группой"""
 
@@ -19,12 +20,12 @@ class Test03UserGroup:
         )
 
     def test_02_01_create_usergroup_auth(
-        self, user_client, name_for_usergroup
+            self, user_client, name_for_usergroup
     ):
         response = user_client.post("/api/groups/", data=name_for_usergroup)
         assert (
-            response.status_code == HTTPStatus.CREATED
-            and response.data.get("name") == name_for_usergroup.get("name")
+                response.status_code == HTTPStatus.CREATED
+                and response.data.get("name") == name_for_usergroup.get("name")
         ), (
             f"POST-запрос от авторизованного пользователя "
             f"на /api/groups/ для создания группы ссылок не возвращает ответ со статусом 201 "
@@ -33,7 +34,7 @@ class Test03UserGroup:
         )
 
     def test_02_02_create_usergroup_and_check_idempotency(
-        self, user_client, user_client2, name_for_usergroup
+            self, user_client, user_client2, name_for_usergroup
     ):
         response = user_client.post("/api/groups/", data=name_for_usergroup)
         assert response.status_code == HTTPStatus.CREATED, (
@@ -62,7 +63,7 @@ class Test03UserGroup:
         )
 
     def test_02_03_create_usergroup_len_restrict_for_name(
-        self, user_client, very_long_name_for_usergroup
+            self, user_client, very_long_name_for_usergroup
     ):
         response = user_client.post(
             "/api/groups/", data=very_long_name_for_usergroup
@@ -75,7 +76,7 @@ class Test03UserGroup:
         )
 
     def test_02_04_create_usergroup_short_name(
-        self, user_client, very_short_name_for_usergroup
+            self, user_client, very_short_name_for_usergroup
     ):
         response = user_client.post(
             "/api/groups/", data=very_short_name_for_usergroup
@@ -88,7 +89,7 @@ class Test03UserGroup:
         )
 
     def test_02_05_create_usergroup_empty_name(
-        self, user_client, empty_name_for_usergroup
+            self, user_client, empty_name_for_usergroup
     ):
         response = user_client.post(
             "/api/groups/", data=empty_name_for_usergroup
@@ -109,8 +110,37 @@ class Test03UserGroup:
             f"Детали: {response.data}"
         )
 
+    def test_02_06_create_group_and_check_color_presence(self, user_client, name_for_usergroup):
+        response = user_client.post("/api/groups/", data=name_for_usergroup)
+
+        assert response.status_code == HTTPStatus.CREATED, (
+            f"POST-запрос от авторизованного пользователя "
+            f"на /api/groups/ для создания группы ссылок не возвращает ответ со статусом 201 "
+            f"(группа успешно создана).\n"
+            f"Детали: {response.data}"
+        )
+
+        assert response.data['color'], (
+            f"POST-запрос от авторизованного пользователя "
+            f"на /api/groups/ для создания группы ссылок не возвращает ответ "
+            f"с группой, у которой есть цвет\n"
+            f"Детали: {response.data}"
+        )
+
+    def test_02_07_create_groups_over_limit(self, user_client, name_for_usergroup, all_full_limit_groups):
+        utils.create_all_groups(user_client, all_full_limit_groups)
+
+        response = user_client.post("/api/groups/", data=name_for_usergroup)
+
+        assert response.status_code == HTTPStatus.BAD_REQUEST, (
+            f"POST-запрос от авторизованного пользователя "
+            f"на /api/groups/ для создания групп ссылок выше лимита не возвращает ответ со статусом 400"
+            f"(нельзя создать группу, если лимит их количества у пользователя превышен).\n"
+            f"Детали: {response.data}"
+        )
+
     def test_03_01_edit_group_name(
-        self, user_client, name_for_usergroup, new_name_for_usergroup
+            self, user_client, name_for_usergroup, new_name_for_usergroup
     ):
         group_id = utils.create_usergroup(user_client, name_for_usergroup)
 
@@ -127,7 +157,7 @@ class Test03UserGroup:
         )
 
     def test_03_02_edit_group_name_without_new_name_field(
-        self, user_client, name_for_usergroup
+            self, user_client, name_for_usergroup
     ):
         group_id = utils.create_usergroup(user_client, name_for_usergroup)
 
@@ -142,7 +172,7 @@ class Test03UserGroup:
         )
 
     def test_03_03_edit_group_name_with_empty_new_name_field(
-        self, user_client, name_for_usergroup, empty_name_for_usergroup
+            self, user_client, name_for_usergroup, empty_name_for_usergroup
     ):
         group_id = utils.create_usergroup(user_client, name_for_usergroup)
         response = user_client.patch(
@@ -156,7 +186,7 @@ class Test03UserGroup:
         )
 
     def test_03_04_edit_group_name_to_existing_group_name(
-        self, user_client, name_for_usergroup, new_name_for_usergroup
+            self, user_client, name_for_usergroup, new_name_for_usergroup
     ):
         utils.create_usergroup(user_client, name_for_usergroup)
         group_id_2 = utils.create_usergroup(
@@ -174,7 +204,7 @@ class Test03UserGroup:
         )
 
     def test_03_05_edit_group_name_very_long_new_name(
-        self, user_client, name_for_usergroup, very_long_name_for_usergroup
+            self, user_client, name_for_usergroup, very_long_name_for_usergroup
     ):
         group_id = utils.create_usergroup(user_client, name_for_usergroup)
         response = user_client.patch(
@@ -188,7 +218,7 @@ class Test03UserGroup:
         )
 
     def test_04_01_get_group_not_auth(
-        self, user_client, client, name_for_usergroup
+            self, user_client, client, name_for_usergroup
     ):
         response = client.get("/api/groups/1/")
         assert response.status_code == HTTPStatus.UNAUTHORIZED, (
@@ -222,7 +252,7 @@ class Test03UserGroup:
         )
 
     def test_04_03_get_group_with_other_owner(
-        self, user_client, user_client2, name_for_usergroup
+            self, user_client, user_client2, name_for_usergroup
     ):
         group_id = utils.create_usergroup(user_client2, name_for_usergroup)
 
@@ -268,7 +298,7 @@ class Test03UserGroup:
         )
 
     def test_05_03_get_and_check_only_all_user_groups(
-        self, user_client, user_client2, name_for_usergroup
+            self, user_client, user_client2, name_for_usergroup
     ):
         utils.create_usergroup(user_client, name_for_usergroup)
         utils.create_usergroup(user_client2, name_for_usergroup)
@@ -303,7 +333,7 @@ class Test03UserGroup:
         )
 
     def test_06_02_delete_not_own_group(
-        self, user_client, user_client2, name_for_usergroup
+            self, user_client, user_client2, name_for_usergroup
     ):
         group_id = utils.create_usergroup(user_client, name_for_usergroup)
 

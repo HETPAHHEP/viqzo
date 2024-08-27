@@ -6,6 +6,7 @@ from tests import utils
 
 
 @pytest.mark.django_db(transaction=True)
+@pytest.mark.usefixtures('init_colors')
 class Test02ShortLinksWithGroup:
     """Тестирование API для проверки связанности коротких ссылок и групп"""
 

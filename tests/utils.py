@@ -65,6 +65,28 @@ def create_usergroup(client, name_for_usergroup) -> int:
     raise KeyError("Id группы отсутствует в ответе при её создании")
 
 
+def create_all_groups(client, groups: list[dict]) -> list[int]:
+    """Создание всех групп из словаря с их именами"""
+    assert groups, (
+        "Отсутствуют группы для создания"
+    )
+
+    groups_ids = []
+
+    for group in groups:
+        groups_ids.append(
+            create_usergroup(client, group)
+        )
+
+    assert groups_ids and len(groups_ids) == len(groups),  (
+        f"Количество созданных групп не равно количеству переданных\n"
+        f"Передано: {len(groups)}"
+        f"Создано: {len(groups_ids)} \n"
+    )
+
+    return groups_ids
+
+
 def add_created_group_to_dict(group_id) -> dict:
     """Добавление ID группы в словарь для изменения ссылки"""
     group_dict = {"group": group_id}

@@ -16,6 +16,7 @@ class Test00BasicShort:
         assert response.status_code == HTTPStatus.CREATED, (
             f"POST-запрос с валидной ссылкой от неавторизованного пользователя "
             f"на api/links/ для создания короткого кода не возвращает ответ со статусом 201.\n"
+            f"Детали: {response.data}"
         )
 
     def test_01_02_create_short_link_and_check_idempotency(
@@ -25,7 +26,7 @@ class Test00BasicShort:
         assert response_1.status_code == HTTPStatus.CREATED, (
             f"POST-запрос с валидной ссылкой от неавторизованного пользователя "
             f"на api/links/ для создания короткого кода не возвращает ответ со статусом 201.\n"
-            f"Детали: {response.data}"
+            f"Детали: {response_1.data}"
         )
 
         response_2 = client.post("/api/links/", data=valid_original_link)
@@ -36,7 +37,7 @@ class Test00BasicShort:
             f"POST-запрос с валидной ссылкой от неавторизованного пользователя "
             f"на api/links/ для создания короткого кода для уже созданной ссылки "
             f"не возвращает ответ со статусом 200.\n"
-            f"Детали: {response.data}"
+            f"Детали: {response_2.data}"
         )
 
         response_3 = client.post("/api/links/", data=valid_original_link)
@@ -48,7 +49,7 @@ class Test00BasicShort:
             f"POST-запрос с валидной ссылкой от неавторизованного пользователя "
             f"на api/links/ для создания короткого кода для уже созданной ссылки "
             f"не возвращает ответ со статусом 200.\n"
-            f"Детали: {response.data}"
+            f"Детали: {response_3.data}"
         )
 
     def test_01_03_create_short_link_with_invalid_original_link(
@@ -174,7 +175,7 @@ class Test00BasicShort:
 
         assert (
             response.status_code == HTTPStatus.OK
-            and type(response.data["is_active"]) == bool
+            and type(response.data["is_active"]) is bool
             and response.data["is_active"]
         ), (
             f"PATCH-запрос от авторизованного пользователя "
@@ -190,7 +191,7 @@ class Test00BasicShort:
 
         assert (
             response.status_code == HTTPStatus.OK
-            and type(response.data["is_active"]) == bool
+            and type(response.data["is_active"]) is bool
             and response.data["is_active"]
         ), (
             f"PATCH-запрос от авторизованного пользователя "
@@ -247,7 +248,7 @@ class Test00BasicShort:
 
         assert (
             response.status_code == HTTPStatus.OK
-            and type(response.data["is_active"]) == bool
+            and type(response.data["is_active"]) is bool
             and not response.data["is_active"]
         ), (
             f"PATCH-запрос от авторизованного пользователя "
@@ -263,7 +264,7 @@ class Test00BasicShort:
 
         assert (
             response.status_code == HTTPStatus.OK
-            and type(response.data["is_active"]) == bool
+            and type(response.data["is_active"]) is bool
             and not response.data["is_active"]
         ), (
             f"PATCH-запрос от авторизованного пользователя "
@@ -287,7 +288,7 @@ class Test00BasicShort:
 
         assert (
             response.status_code == HTTPStatus.OK
-            and type(response.data["is_active"]) == bool
+            and type(response.data["is_active"]) is bool
             and not response.data["is_active"]
         ), (
             f"PATCH-запрос от авторизованного пользователя "
@@ -302,7 +303,7 @@ class Test00BasicShort:
 
         assert (
             response.status_code == HTTPStatus.OK
-            and type(response.data["is_active"]) == bool
+            and type(response.data["is_active"]) is bool
             and not response.data["is_active"]
         ), (
             f"PATCH-запрос от авторизованного пользователя "
@@ -317,7 +318,7 @@ class Test00BasicShort:
 
         assert (
             response.status_code == HTTPStatus.OK
-            and type(response.data["is_active"]) == bool
+            and type(response.data["is_active"]) is bool
             and response.data["is_active"]
         ), (
             f"PATCH-запрос от авторизованного пользователя "
