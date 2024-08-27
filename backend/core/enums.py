@@ -15,7 +15,7 @@ class Limits(IntEnum):
     # Максимальное количество коротких ссылок в группе
     MAX_LINKS_GROUP_AMOUNT = 100
     # Максимальное количество групп
-    MAX_GROUPS_AMOUNT = 150
+    MAX_GROUPS_AMOUNT = 20
     # Максимальная длинна названия компании
     MAX_LEN_CAMPAIGN_NAME = 40
     # Максимальное количество групп в компании

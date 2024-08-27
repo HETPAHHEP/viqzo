@@ -26,7 +26,9 @@ class Color(models.Model):
     """Цвет для группы или кампании"""
 
     name = models.CharField(
-        max_length=Limits.MAX_LEN_COLOR_NAME, verbose_name=_("Имя цвета")
+        blank=False,
+        max_length=Limits.MAX_LEN_COLOR_NAME,
+        verbose_name=_("Имя цвета"),
     )
     color_hex = models.CharField(
         max_length=7,  # Hex format with '#'
@@ -34,7 +36,7 @@ class Color(models.Model):
         validators=[
             MinLengthValidator(limit_value=4),
             MaxLengthValidator(limit_value=7),
-            validators.HexColorValidator,
+            validators.HexColorValidator(),
         ],
         verbose_name=_("HEX Цвета"),
     )
@@ -46,6 +48,11 @@ class Color(models.Model):
 
     def __str__(self):
         return self.color_hex
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+
+        super().save(*args, **kwargs)
 
 
 class UserGroup(models.Model):
@@ -99,6 +106,8 @@ class UserGroup(models.Model):
         return full_clean_check_validation_name(self)
 
     def save(self, *args, **kwargs):
+        self.clean()
+
         if self.color_id is None:  # Проверяем, установлен ли цвет
             self.color = self.set_color()
 
@@ -120,7 +129,6 @@ class ShortLink(models.Model):
         db_index=True,
         verbose_name=_("Короткий код ссылки"),
         validators=[
-            validators.ShortCodeValidator,
             MinLengthValidator(limit_value=Limits.MIN_LEN_LINK_SHORT_CODE),
             MaxLengthValidator(limit_value=Limits.MAX_LEN_LINK_SHORT_CODE),
         ],
