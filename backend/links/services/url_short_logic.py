@@ -1,8 +1,9 @@
 import uuid
+from re import Pattern, compile
 
 from core.enums import Limits
 
-from .services_exceptions import LinkIDZeroError
+from .services_exceptions import ShortCodeError, LinkIDZeroError
 
 
 class LinkHash:
@@ -20,6 +21,10 @@ class LinkHash:
         )
         self.base_len = len(self.alphabet)
         self.code_fix_len = Limits.BASIC_LEN_SHORT_CODE
+
+        self.short_code_pattern: Pattern = compile(
+            rf"^[a-zA-Z0-9]{{{self.code_fix_len}}}$"
+        )
 
     @staticmethod
     def _get_id_for_link() -> int:
@@ -50,15 +55,26 @@ class LinkHash:
         # Укорачиваем код для использования в ссылке
         return short_code[::-1][: self.code_fix_len :]
 
+    def _check_short_code_regex(self, short: str):
+        check_result = bool(self.short_code_pattern.match(short))
+
+        if not check_result:
+            print(self.short_code_pattern)
+            raise ShortCodeError
+
     def get_short_code(self) -> str:
         """Входная точка для генерации кода"""
         random_id = self._get_id_for_link()
         short_code = self._to_base_62(random_id)
+        self._check_short_code_regex(short_code)
 
         return short_code
 
 
 if __name__ == "__main__":
     # for manual test
+    from backend.core.enums import Limits
+    from backend.links.services.services_exceptions import LinkIDZeroError
+
     hash_for_link = LinkHash()
     print(hash_for_link.get_short_code())
