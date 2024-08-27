@@ -71,7 +71,7 @@ class ShortLinkWriteSerializer(serializers.ModelSerializer):
         help_text="Короткий код ссылки",
         max_length=Limits.MAX_LEN_LINK_SHORT_CODE,
         min_length=Limits.MIN_LEN_LINK_SHORT_CODE,
-        validators=[AliasCodeValidator],
+        validators=[AliasCodeValidator()],
         required=False,
     )
 
