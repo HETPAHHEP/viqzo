@@ -1,7 +1,7 @@
 [tool.poetry]
 package-mode = false
 name = "viqzo"
-version = "0.1.0"
+version = "0.2.0"
 description = ""
 authors = ["HETPAHEP"]
 license = "MIT"
@@ -39,10 +39,10 @@ version_scheme = "pep440"
 version_provider = "poetry"
 update_changelog_on_bump = true
 major_version_zero = true
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "viqzo.dev-settings"
@@ -56,7 +56,6 @@ testpaths = "tests/"
 python_files = "test_*.py"
 disable_test_id_escaping_and_forfeit_all_rights_to_community_support = true
 
-
 [tool.isort]
 py_version = 312
 line_length = 79
@@ -64,7 +63,6 @@ profile = "black"
 lines_after_imports = 2
 include_trailing_comma = true
 skip = ["__init__.py"]
-
 
 [tool.flake8]
 max-line-leght = 79
@@ -78,13 +76,11 @@ exclude = '''
     __init__.py
 '''
 
-
 [tool.mypy]
 warn_unused_configs = false
 exclude = [
     "tests/"
 ]
-
 
 [tool.ruff]
 target-version = "py312"
@@ -96,7 +92,6 @@ exclude = [
     "migrations"
 
 ]
-
 
 [tool.ruff.lint]
 extend-select = [
@@ -120,7 +115,7 @@ extend-select = [
 ]
 
 [tool.ruff.lint.isort]
-known-third-party = ["fastapi", "pydantic", "starlette"]
+known-third-party = ["Django", "djangorestframework", "starlette"]
 lines-after-imports = 2
 length-sort = true
 known-local-folder = ["backend"]
