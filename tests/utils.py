@@ -1,4 +1,8 @@
+from csv import reader
 from http import HTTPStatus
+from pathlib import Path
+
+from django.conf import settings
 
 
 def create_short_link(client, valid_original_link) -> str:
@@ -127,3 +131,25 @@ def create_and_add_short_link_to_group(
         return short_code, group_id
 
     raise KeyError("Короткий код ссылки отсутствует в ответе при её создании")
+
+
+def count_colors_from_csv() -> int:
+    csv_file = "colors.csv"
+    path_to_csv = Path(settings.BASE_DIR).joinpath(f"resources/{csv_file}")
+
+    assert path_to_csv.exists() is True, (f"Отсутствует файл {csv_file} "
+                                          f"с цветами для тестирования")
+
+    with open(path_to_csv, encoding="utf-8") as file:
+        csv_reader = reader(file)
+        total = 0
+
+        for row in csv_reader:
+            if not row:
+                raise KeyError(
+                    "Отсутствует первая строка. Скорее всего, файл пуст"
+                )
+
+            total += 1
+
+        return total - 1
