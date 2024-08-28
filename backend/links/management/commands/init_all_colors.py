@@ -2,11 +2,11 @@ from csv import reader
 from pathlib import Path
 
 from django.db import DatabaseError, IntegrityError
+from django.conf import settings
 from django.db.transaction import atomic
 from django.core.management import BaseCommand, CommandError
 
 from links.models import Color
-from viqzo.settings import BASE_DIR
 from links.services.colors import Color as ColorChecker
 
 
@@ -120,7 +120,7 @@ class Command(BaseCommand):
     def _get_colors_from_csv(self, options) -> None:
         """Чтение файла и старт других функции для создания цветов"""
         csv_file = "colors.csv"
-        path_to_csv = Path(BASE_DIR).joinpath(f"resources/{csv_file}")
+        path_to_csv = Path(settings.BASE_DIR).joinpath(f"resources/{csv_file}")
 
         if path_to_csv.exists():
             try:
