@@ -50,6 +50,53 @@ INSTALLED_APPS = [
     "links",
 ]
 
+
+# # LOGGING CONFIG
+#
+# LOGGING = {
+#     "version": 1,
+#     "disable_existing_loggers": False,
+#     "formatters": {
+#         "verbose": {
+#             "format": "{levelname} {asctime} {module} "
+#             "{process:d} {thread:d} {message}",
+#             "style": "{",
+#         },
+#         "telegram_message": {
+#             "format": "❌ Пришла ошибка с сервера! \n\n"
+#             "{levelname} {asctime} {module} "
+#             "{process:d} {thread:d} {message} \n\n",
+#             "style": "{",
+#         },
+#         "simple": {
+#             "format": "{levelname} {message}",
+#             "style": "{",
+#         },
+#     },
+#     "handlers": {
+#         "telegram_bot": {
+#             "level": "ERROR",
+#             "class": "viqzo.handlers.TelegramBotHandler",
+#             "chat_id": str(os.getenv("TELEGRAM_CHAT_ID")),
+#             "token": str(os.getenv("TELEGRAM_BOT_TOKEN")),
+#             "formatter": "telegram_message",
+#         },
+#         'file': {
+#             'level': 'ERROR',
+#             'class': 'logging.FileHandler',
+#             'filename': Path.joinpath(BASE_DIR, 'logs/django_error.log'),
+#             'formatter': 'verbose',
+#         },
+#     },
+#     "loggers": {
+#         "django.request": {
+#             "handlers": ["telegram_bot", "file"],
+#             "level": "ERROR",
+#         },
+#     },
+# }
+
+
 REST_FRAMEWORK.update(  # noqa: F405
     {"DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema"}
 )

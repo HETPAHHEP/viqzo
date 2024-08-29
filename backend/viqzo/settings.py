@@ -117,7 +117,7 @@ SERVER_EMAIL = EMAIL_HOST_USER
 EMAIL_ADMIN = EMAIL_HOST_USER
 
 
-# LOGGING
+# LOGGING CONFIG
 
 LOGGING = {
     "version": 1,
@@ -140,10 +140,10 @@ LOGGING = {
         },
     },
     "handlers": {
-        "mail_admins": {
-            "level": "ERROR",
-            "class": "django.utils.log.AdminEmailHandler",
-        },
+        # "mail_admins": {
+        #     "level": "ERROR",
+        #     "class": "django.utils.log.AdminEmailHandler",
+        # },
         "telegram_bot": {
             "level": "ERROR",
             "class": "viqzo.handlers.TelegramBotHandler",
@@ -151,10 +151,17 @@ LOGGING = {
             "token": str(os.getenv("TELEGRAM_BOT_TOKEN")),
             "formatter": "telegram_message",
         },
+        "file": {
+            "level": "ERROR",
+            "class": "logging.FileHandler",
+            "filename": Path.joinpath(BASE_DIR, "logs/django_error.log"),
+            "formatter": "verbose",
+        },
     },
     "loggers": {
         "django.request": {
-            "handlers": ["mail_admins", "telegram_bot"],
+            # "handlers": ["mail_admins", "telegram_bot"],
+            "handlers": ["telegram_bot", "file"],
             "level": "ERROR",
         },
     },
