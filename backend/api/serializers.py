@@ -1,12 +1,14 @@
 from collections import OrderedDict
 
-from rest_framework import serializers
+from rest_framework import status, serializers
+from django.core.validators import FileExtensionValidator
 from django.utils.translation import gettext_lazy as _
 
 from core.enums import Limits
 from links.models import ShortLink, UserGroup
 
 from .validators import AliasCodeValidator
+from .services.links_file import check_request_fields, check_user_groups_amount
 from .services.short_links import validate_alias, validate_group_for_link
 
 
@@ -111,7 +113,10 @@ class ShortLinkEditSerializer(serializers.Serializer):
         active_status = validated_data.pop("is_active", None)
         group = validated_data.pop("group", None)
 
-        if type(active_status) is bool and instance.is_active != active_status:
+        if (
+            isinstance(active_status, bool)
+            and instance.is_active != active_status
+        ):
             instance.is_active = active_status
 
         if group and instance.group != group:
@@ -123,3 +128,52 @@ class ShortLinkEditSerializer(serializers.Serializer):
 
     def to_representation(self, instance):
         return ShortLinkReadSerializer(instance).data
+
+
+class LinksExportWriteSerializer(serializers.Serializer):
+    """Сериализатор для добавления пользовательских ссылок из файла"""
+
+    group_name = serializers.CharField(
+        required=False,
+        allow_blank=False,
+        max_length=Limits.MAX_LEN_GROUP_NAME,
+        help_text="Имя новой группы для ссылок из файла",
+    )
+    group_id = serializers.PrimaryKeyRelatedField(
+        required=False,
+        many=False,
+        allow_empty=False,
+        queryset=UserGroup.objects.all(),
+        help_text="ID существующей группы",
+    )
+    file = serializers.FileField(
+        required=True,
+        allow_empty_file=False,
+        allow_null=False,
+        max_length=int(Limits.MAX_LINKS_GROUP_AMOUNT * 1024 * 2),
+        validators=[
+            FileExtensionValidator(
+                allowed_extensions=["csv", "json"],
+                code=status.HTTP_400_BAD_REQUEST,
+                message=_(
+                    "Неправильное расширение файла. "
+                    "Разрешены CSV и JSON файлы"
+                ),
+            )
+        ],
+        help_text=_(
+            "Файл с ссылками и их опциональными "
+            "алиасами в формате CSV или JSON"
+        ),
+    )
+
+    class Meta:
+        write_only = True
+
+    def validate(self, attrs):
+        """Проверка ограничений и валидация"""
+        user = self.context.get("request").user
+        check_user_groups_amount(user)
+        check_request_fields(attrs)
+
+        return attrs
