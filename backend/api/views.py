@@ -1,6 +1,9 @@
-from rest_framework import viewsets, exceptions
+from pathlib import Path
+
+from rest_framework import status, viewsets, exceptions
 from rest_framework.filters import SearchFilter, OrderingFilter
 from rest_framework.response import Response
+from rest_framework.decorators import action, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -15,6 +18,7 @@ from .serializers import (
     UserGroupReadSerializer,
     ShortLinkWriteSerializer,
     UserGroupWriteSerializer,
+    LinksExportWriteSerializer,
 )
 
 
@@ -85,6 +89,45 @@ class ShortLinkViewSet(viewsets.ModelViewSet):
         if user.is_authenticated:
             serializer.save(owner=user)
         serializer.save()
+
+    @permission_classes([IsAuthenticated])
+    @action(
+        methods=["get"],
+        url_path="import-links",
+        description="Отправить файл с нужными ссылками для пользователя",
+        detail=True,
+    )
+    def import_links(self):
+        pass
+
+    @permission_classes([IsAuthenticated])
+    @action(
+        methods=["post"],
+        url_path="export-links",
+        description="Получить файл с новыми ссылками пользователя",
+        detail=False,
+    )
+    def export_links(self, request):
+        serializer = LinksExportWriteSerializer(
+            data=request.data, context={"request": request}
+        )
+
+        if serializer.is_valid():
+            file_extension = (
+                Path(str(serializer.validated_data["file"])).suffix[1:].lower()
+            )
+
+            if file_extension == "csv":
+                print(1)
+
+            if file_extension == "json":
+                print(2)
+
+            return Response()
+        else:
+            return Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class UserGroupLinkViewSet(viewsets.ModelViewSet):
